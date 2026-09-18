@@ -1,4 +1,11 @@
-export const recipes = [
+export interface Recipe {
+  id: string;
+  inputs: { resource: string; amount: number }[];
+  outputs: { resource: string; amount: number }[];
+  cycleTime: number;
+}
+
+export const recipes: Recipe[] = [
   {
     id: 'smelter',
     inputs: [
@@ -74,3 +81,7 @@ export const recipes = [
     cycleTime: 4
   }
 ];
+
+export function getRecipe(id: string): Recipe | undefined {
+  return recipes.find((recipe) => recipe.id === id);
+}

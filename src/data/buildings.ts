@@ -1,6 +1,16 @@
-import { resources } from './resources';
+export interface BuildingDef {
+  id: string;
+  name: string;
+  category: 'extractor' | 'processor' | 'power' | 'storage';
+  cost: { resource: string; amount: number }[];
+  footprint: { width: number; height: number };
+  powerDraw: number;
+  recipeId: string;
+  placementRule: string;
+  powerOutput?: number;
+}
 
-export const buildings = [
+export const buildings: BuildingDef[] = [
   // Extractors
   {
     id: 'iron-miner',
@@ -149,3 +159,7 @@ export const buildings = [
     placementRule: 'storage'
   },
 ];
+
+export function getBuildingDef(id: string): BuildingDef | undefined {
+  return buildings.find((building) => building.id === id);
+}

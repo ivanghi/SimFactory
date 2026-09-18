@@ -1,6 +1,6 @@
 import { WorldState } from '../sim/world';
 
-export function saveGame(state: WorldState): void {
+export function saveGame(_state: WorldState): void {
   // Implementation placeholder - will be filled in later
 }
 

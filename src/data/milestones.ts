@@ -3,12 +3,15 @@ export const milestones = [
   { id: 'iron-miner', unlockedBy: 'start' },
   { id: 'coal-miner', unlockedBy: 'start' },
   { id: 'water-pump', unlockedBy: 'start' },
+  { id: 'smelter', unlockedBy: 'start' },
+  { id: 'gear-assembler', unlockedBy: 'start' },
   { id: 'solar-panel', unlockedBy: 'start' },
   { id: 'warehouse', unlockedBy: 'start' },
   
   // Unlock after producing 50 iron ingots
   { id: 'copper-miner', unlockedBy: 'produce-iron-ingot', quantity: 50 },
   { id: 'copper-smelter', unlockedBy: 'produce-iron-ingot', quantity: 50 },
+  { id: 'coal-generator', unlockedBy: 'produce-iron-ingot', quantity: 50 },
   
   // Unlock after placing first coal generator
   { id: 'refinery', unlockedBy: 'place-coal-generator' },

@@ -5,7 +5,7 @@ module.exports = {
   },
   extends: [
     'eslint:recommended',
-    '@typescript-eslint/recommended',
+    'plugin:@typescript-eslint/recommended',
     'plugin:react-hooks/recommended',
   ],
   parser: '@typescript-eslint/parser',
@@ -14,5 +14,9 @@ module.exports = {
   ],
   rules: {
     'react-refresh/only-export-components': 'warn',
+    '@typescript-eslint/no-unused-vars': [
+      'error',
+      { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+    ],
   },
 }
