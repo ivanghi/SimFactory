@@ -11,6 +11,8 @@ import { getBuildingDef } from './data/buildings';
 import { TICK_DT } from './data/constants';
 import { CameraController } from './render/camera';
 import { CanvasRenderer } from './render/canvas';
+import { formatOfflineSummary, processOfflineTime } from './sim/offline';
+import type { OfflineSummary } from './sim/offline';
 import { SaveError } from './save/serialize';
 import { loadGame, startAutosave } from './save/storage';
 import { App } from './ui/app';
@@ -199,18 +201,25 @@ function clampSpeed(speed: number): SpeedSetting {
   return Math.min(3, Math.max(0, Math.round(speed))) as SpeedSetting;
 }
 
-function restoreOrCreate(): { world: WorldState; speed: SpeedSetting } {
+interface RestoredGame {
+  world: WorldState;
+  speed: SpeedSetting;
+  offline: OfflineSummary | null;
+}
+
+function restoreOrCreate(): RestoredGame {
   try {
     const save = loadGame();
     if (save) {
-      return { world: save.world, speed: clampSpeed(save.meta.speed) };
+      const offline = processOfflineTime(save.world, Date.now() - save.meta.savedAt);
+      return { world: save.world, speed: clampSpeed(save.meta.speed), offline };
     }
   } catch (error) {
     const message = error instanceof SaveError ? error.message : 'The save could not be read.';
     pushToast(`Save error: ${message}`);
   }
   const seed = Math.floor(Math.random() * 2147483647);
-  return { world: createWorld(generateMap(seed)), speed: 1 };
+  return { world: createWorld(generateMap(seed)), speed: 1, offline: null };
 }
 
 function init(): void {
@@ -235,6 +244,13 @@ function init(): void {
   setWorld(world);
   setSpeed(restored.speed);
   mountUI();
+
+  if (restored.offline) {
+    const summary = formatOfflineSummary(restored.offline);
+    if (summary) {
+      pushToast(summary);
+    }
+  }
 
   startAutosave(() => ({ world, speed: getState().speed }));
 
