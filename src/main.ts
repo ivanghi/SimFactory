@@ -11,6 +11,8 @@ import { getBuildingDef } from './data/buildings';
 import { TICK_DT } from './data/constants';
 import { CameraController } from './render/camera';
 import { CanvasRenderer } from './render/canvas';
+import { SaveError } from './save/serialize';
+import { loadGame, startAutosave } from './save/storage';
 import { App } from './ui/app';
 import {
   bumpUi,
@@ -21,6 +23,7 @@ import {
   setWorld,
   syncUi
 } from './ui/store';
+import type { SpeedSetting } from './ui/store';
 
 const MAX_ACCUMULATOR = 0.5;
 const CANVAS_ID = 'game-canvas';
@@ -189,10 +192,30 @@ function mountUI(): void {
   }
 }
 
-function init(): void {
+function clampSpeed(speed: number): SpeedSetting {
+  if (!Number.isFinite(speed)) {
+    return 1;
+  }
+  return Math.min(3, Math.max(0, Math.round(speed))) as SpeedSetting;
+}
+
+function restoreOrCreate(): { world: WorldState; speed: SpeedSetting } {
+  try {
+    const save = loadGame();
+    if (save) {
+      return { world: save.world, speed: clampSpeed(save.meta.speed) };
+    }
+  } catch (error) {
+    const message = error instanceof SaveError ? error.message : 'The save could not be read.';
+    pushToast(`Save error: ${message}`);
+  }
   const seed = Math.floor(Math.random() * 2147483647);
-  const map = generateMap(seed);
-  world = createWorld(map);
+  return { world: createWorld(generateMap(seed)), speed: 1 };
+}
+
+function init(): void {
+  const restored = restoreOrCreate();
+  world = restored.world;
 
   canvas = setupCanvas();
   camera = new CameraController();
@@ -210,8 +233,10 @@ function init(): void {
   window.addEventListener('resize', handleResize);
 
   setWorld(world);
-  setSpeed(1);
+  setSpeed(restored.speed);
   mountUI();
+
+  startAutosave(() => ({ world, speed: getState().speed }));
 
   requestAnimationFrame(gameLoop);
 }
