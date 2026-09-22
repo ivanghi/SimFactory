@@ -20,14 +20,16 @@ const START_UNLOCKED = [
 
 const IRON_THRESHOLD_UNLOCKS = ['copper-miner', 'copper-smelter', 'coal-generator'];
 const COAL_GENERATOR_UNLOCKS = ['refinery'];
-const FUEL_THRESHOLD_UNLOCKS = ['chemical-plant', 'pumpjack'];
+const FUEL_THRESHOLD_UNLOCKS = ['chemical-plant'];
 const GEAR_THRESHOLD_UNLOCKS = ['circuit-assembler'];
+const GEAR_THRESHOLD2_UNLOCKS = ['pumpjack'];
 
 const ALL_DERIVED = [
   ...IRON_THRESHOLD_UNLOCKS,
   ...COAL_GENERATOR_UNLOCKS,
   ...FUEL_THRESHOLD_UNLOCKS,
-  ...GEAR_THRESHOLD_UNLOCKS
+  ...GEAR_THRESHOLD_UNLOCKS,
+  ...GEAR_THRESHOLD2_UNLOCKS
 ];
 
 function ids(world: WorldState): string[] {
@@ -60,13 +62,21 @@ describe('milestones', () => {
     expect(unlockedBy(world => (world.milestoneProgress['produce-gears'] = 50))).toEqual(
       GEAR_THRESHOLD_UNLOCKS
     );
+    const world = makeStartedWorld();
+    world.milestoneProgress['produce-gears'] = 50;
+    evaluateMilestones(world);
+    world.milestoneProgress['produce-gears'] = 100;
+    expect(ids(world)).toEqual(GEAR_THRESHOLD2_UNLOCKS);
   });
 
   test('nothing unlocks below threshold and unlocks fire at or above it', () => {
     expectThreshold('produce-iron-ingot', 50, IRON_THRESHOLD_UNLOCKS);
     expectThreshold('place-coal-generator', 1, COAL_GENERATOR_UNLOCKS);
     expectThreshold('produce-fuel', 100, FUEL_THRESHOLD_UNLOCKS);
-    expectThreshold('produce-gears', 50, GEAR_THRESHOLD_UNLOCKS);
+    expectThreshold('produce-gears', 50, GEAR_THRESHOLD_UNLOCKS, [
+      ...GEAR_THRESHOLD_UNLOCKS,
+      ...GEAR_THRESHOLD2_UNLOCKS
+    ]);
   });
 
   test('multiple milestones satisfied in one tick all apply in a deterministic order', () => {
@@ -74,13 +84,14 @@ describe('milestones', () => {
     world.milestoneProgress['produce-iron-ingot'] = 50;
     world.milestoneProgress['place-coal-generator'] = 1;
     world.milestoneProgress['produce-fuel'] = 100;
-    world.milestoneProgress['produce-gears'] = 50;
+    world.milestoneProgress['produce-gears'] = 100;
 
     expect(ids(world)).toEqual([
       ...IRON_THRESHOLD_UNLOCKS,
       ...COAL_GENERATOR_UNLOCKS,
       ...FUEL_THRESHOLD_UNLOCKS,
-      ...GEAR_THRESHOLD_UNLOCKS
+      ...GEAR_THRESHOLD_UNLOCKS,
+      ...GEAR_THRESHOLD2_UNLOCKS,
     ]);
   });
 
@@ -198,7 +209,12 @@ function unlockedBy(mutate: (world: WorldState) => void): string[] {
   return ids(world);
 }
 
-function expectThreshold(key: string, target: number, expected: string[]): void {
+function expectThreshold(
+  key: string,
+  target: number,
+  expected: string[],
+  expectedAbove: string[] = expected
+): void {
   const below = makeStartedWorld();
   below.milestoneProgress[key] = target - 1;
   expect(evaluateMilestones(below)).toEqual([]);
@@ -209,5 +225,5 @@ function expectThreshold(key: string, target: number, expected: string[]): void 
 
   const above = makeStartedWorld();
   above.milestoneProgress[key] = target + 100;
-  expect(ids(above)).toEqual(expected);
+  expect(ids(above)).toEqual(expectedAbove);
 }

@@ -182,8 +182,10 @@ describe('tick', () => {
       setNode(world.map, 12, 10, 'coal', 1.2);
       setTerrain(world.map, 14, 14, 'water');
       world.stockpile['iron-ore'] = 300;
+      world.stockpile['copper-ore'] = 300;
       world.stockpile['coal'] = 300;
       world.stockpile['iron-ingot'] = 100;
+      world.stockpile['copper-ingot'] = 100;
       placeBuildingOk(world, 'iron-miner', 10, 10);
       placeBuildingOk(world, 'iron-miner', 11, 10);
       placeBuildingOk(world, 'coal-miner', 12, 10);
