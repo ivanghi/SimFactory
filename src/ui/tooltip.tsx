@@ -1,9 +1,13 @@
 import React from 'react';
 
-export const Tooltip: React.FC<{ text: string }> = ({ text }) => {
+export const Tooltip: React.FC<{ text: React.ReactNode; children: React.ReactNode }> = ({
+  text,
+  children
+}) => {
   return (
-    <div className="tooltip">
-      {text}
-    </div>
+    <span className="tooltip-wrap">
+      {children}
+      <span className="tooltip">{text}</span>
+    </span>
   );
 };

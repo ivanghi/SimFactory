@@ -10,6 +10,15 @@ export const EXTRACTOR_BASE_RATE = 1;
 export const EXTRACTOR_ADJACENCY_STEP = 0.1;
 export const EXTRACTOR_ADJACENCY_MAX = 0.3;
 
+export const SOLAR_PANEL_ID = 'solar-panel';
+export const SOLAR_ADJACENCY_STEP = 0.1;
+export const SOLAR_ADJACENCY_MAX = 0.5;
+
+export const COAL_GENERATOR_ID = 'coal-generator';
+export const COAL_GENERATOR_BURN_SECONDS = 4;
+export const COAL_GENERATOR_WATER_BONUS = 0.25;
+export const COAL_FUEL_RESOURCE = 'coal';
+
 export const DEMOLISH_REFUND_RATE = 0.5;
 
 export const STARTING_RESOURCES: Record<string, number> = {

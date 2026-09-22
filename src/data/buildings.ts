@@ -1,4 +1,4 @@
-export interface BuildingDef {
+﻿export interface BuildingDef {
   id: string;
   name: string;
   category: 'extractor' | 'processor' | 'power' | 'storage';
@@ -18,7 +18,7 @@ export const buildings: BuildingDef[] = [
     category: 'extractor',
     cost: [{ resource: 'iron-ore', amount: 10 }],
     footprint: { width: 1, height: 1 },
-    powerDraw: 0,
+    powerDraw: 1,
     recipeId: 'iron-ore',
     placementRule: 'resource'
   },
@@ -28,7 +28,7 @@ export const buildings: BuildingDef[] = [
     category: 'extractor',
     cost: [{ resource: 'copper-ore', amount: 10 }],
     footprint: { width: 1, height: 1 },
-    powerDraw: 0,
+    powerDraw: 1,
     recipeId: 'copper-ore',
     placementRule: 'resource'
   },
@@ -38,7 +38,7 @@ export const buildings: BuildingDef[] = [
     category: 'extractor',
     cost: [{ resource: 'coal', amount: 10 }],
     footprint: { width: 1, height: 1 },
-    powerDraw: 0,
+    powerDraw: 1,
     recipeId: 'coal',
     placementRule: 'resource'
   },
@@ -48,7 +48,7 @@ export const buildings: BuildingDef[] = [
     category: 'extractor',
     cost: [{ resource: 'crude-oil', amount: 15 }],
     footprint: { width: 1, height: 1 },
-    powerDraw: 0,
+    powerDraw: 1,
     recipeId: 'crude-oil',
     placementRule: 'resource'
   },
@@ -58,7 +58,7 @@ export const buildings: BuildingDef[] = [
     category: 'extractor',
     cost: [{ resource: 'water', amount: 10 }],
     footprint: { width: 1, height: 1 },
-    powerDraw: 0,
+    powerDraw: 1,
     recipeId: 'water',
     placementRule: 'resource'
   },
@@ -133,7 +133,7 @@ export const buildings: BuildingDef[] = [
     cost: [{ resource: 'iron-ingot', amount: 5 }],
     footprint: { width: 1, height: 1 },
     powerDraw: 0,
-    powerOutput: 1,
+    powerOutput: 2,
     recipeId: 'solar-panel',
     placementRule: 'power'
   },

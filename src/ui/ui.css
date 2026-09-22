@@ -1,0 +1,333 @@
+.topbar {
+  position: absolute;
+  pointer-events: auto;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 6px 12px;
+  background: rgba(12, 14, 18, 0.88);
+  color: #e8e8e8;
+  font: 12px/1.3 system-ui, sans-serif;
+  user-select: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.res {
+  display: flex;
+  flex-direction: column;
+  min-width: 58px;
+}
+
+.res-name {
+  opacity: 0.65;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.res-amt {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.res.capped .res-amt {
+  color: #ffd75e;
+}
+
+.cap-note {
+  margin-left: auto;
+  opacity: 0.6;
+}
+
+.topbar .tooltip-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.panel {
+  position: absolute;
+  pointer-events: auto;
+  background: rgba(12, 14, 18, 0.88);
+  color: #e6e6e6;
+  font: 12px/1.35 system-ui, sans-serif;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  user-select: none;
+}
+
+.panel-left {
+  top: 48px;
+  left: 10px;
+  bottom: 56px;
+  width: 216px;
+}
+
+.tooltip-wrap {
+  position: relative;
+}
+
+.panel-bottom {
+  left: 236px;
+  bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 6px 12px;
+}
+
+.build-menu {
+  padding: 8px 10px 10px;
+}
+
+.build-menu h3,
+.objectives h3 {
+  margin: 2px 0 6px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.7;
+}
+
+.tooltip-wrap {
+  font-size: 12px;
+}
+
+.build-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  margin: 2px 0;
+  padding: 4px 6px;
+  background: #232830;
+  color: #e6e6e6;
+  border: 1px solid #343b46;
+  border-radius: 5px;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.build-item:hover:not(:disabled) {
+  border-color: #5c6a7d;
+}
+
+.build-item.selected {
+  outline: 2px solid #6db3ff;
+  border-color: #6db3ff;
+}
+
+.build-item.unaffordable .bcost {
+  color: #ff8476;
+}
+
+.build-item.locked {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  flex: none;
+}
+
+.bname {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bcost {
+  font-size: 10px;
+  opacity: 0.8;
+  white-space: nowrap;
+}
+
+.demolish-btn {
+  margin-top: 8px;
+  width: 100%;
+  padding: 5px 6px;
+  background: #3a2024;
+  color: #ffb3a6;
+  border: 1px solid #6a3a40;
+  border-radius: 5px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.demolish-btn:hover {
+  border-color: #a05a62;
+}
+
+.demolish-btn.active {
+  outline: 2px solid #ff6a5a;
+  border-color: #ff6a5a;
+  background: #571f27;
+}
+
+.objectives {
+  padding: 8px 10px 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.objectives ul {
+  list-style: none;
+}
+
+.objectives li {
+  padding: 2px 0;
+}
+
+.objectives li .tooltip-wrap {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+}
+
+.objectives li.done {
+  opacity: 0.6;
+  text-decoration: line-through;
+}
+
+.goal-state {
+  font-weight: 700;
+  width: 10px;
+  flex: none;
+}
+
+.objectives li.done .goal-state {
+  color: #7ddb8a;
+}
+
+.goal-progress {
+  margin-left: auto;
+  opacity: 0.75;
+  font-variant-numeric: tabular-nums;
+}
+
+.tooltip {
+  display: none;
+  position: absolute;
+  left: calc(100% + 8px);
+  top: 0;
+  z-index: 30;
+  width: max-content;
+  max-width: 260px;
+  padding: 6px 8px;
+  background: rgba(20, 24, 30, 0.97);
+  border: 1px solid #3c4655;
+  border-radius: 6px;
+  color: #dfe6ee;
+  font-size: 11px;
+  line-height: 1.45;
+  white-space: normal;
+  pointer-events: none;
+}
+
+.tooltip-wrap:hover > .tooltip {
+  display: block;
+}
+
+.tip-lines .tip-title {
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.tip-lines div {
+  white-space: normal;
+}
+
+.speed-controls {
+  display: flex;
+  gap: 4px;
+}
+
+.speed-controls button {
+  padding: 4px 10px;
+  background: #232830;
+  color: #e6e6e6;
+  border: 1px solid #343b46;
+  border-radius: 5px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.speed-controls button:hover {
+  border-color: #5c6a7d;
+}
+
+.speed-controls button.active {
+  outline: 2px solid #6db3ff;
+  border-color: #6db3ff;
+}
+
+.power-gauge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.power-label {
+  opacity: 0.7;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 10px;
+}
+
+.power-bar {
+  position: relative;
+  width: 90px;
+  height: 8px;
+  background: #1c212a;
+  border: 1px solid #3c4655;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.power-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: #58b368;
+}
+
+.power-gauge.throttled .power-fill {
+  background: #e0a13a;
+}
+
+.power-text {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.power-gauge.throttled .power-text {
+  color: #ffd75e;
+}
+
+.toasts {
+  position: absolute;
+  top: 44px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.toast {
+  padding: 6px 12px;
+  background: rgba(120, 30, 30, 0.92);
+  color: #ffd9d2;
+  border: 1px solid #b04a44;
+  border-radius: 6px;
+  font: 12px system-ui, sans-serif;
+}
