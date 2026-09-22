@@ -1,4 +1,10 @@
-export const milestones = [
+export interface MilestoneDef {
+  id: string;
+  unlockedBy: string;
+  quantity?: number;
+}
+
+export const milestones: MilestoneDef[] = [
   // Start unlocked
   { id: 'iron-miner', unlockedBy: 'start' },
   { id: 'coal-miner', unlockedBy: 'start' },

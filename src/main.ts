@@ -5,6 +5,8 @@ import { createWorld, placeBuilding, demolishBuilding } from './sim/world';
 import type { PlacementError, WorldState } from './sim/world';
 import { tick } from './sim/tick';
 import { updatePower } from './sim/power';
+import { evaluateMilestones } from './sim/milestones';
+import type { MilestoneUnlockEvent } from './sim/milestones';
 import { getBuildingDef } from './data/buildings';
 import { TICK_DT } from './data/constants';
 import { CameraController } from './render/camera';
@@ -68,6 +70,13 @@ function isOnMap(tx: number, ty: number): boolean {
   return tx >= 0 && tx < MAP_SIZE && ty >= 0 && ty < MAP_SIZE;
 }
 
+function reportUnlocks(events: MilestoneUnlockEvent[]): void {
+  for (const event of events) {
+    const name = getBuildingDef(event.buildingId)?.name ?? event.buildingId;
+    pushToast(`Unlocked: ${name}`);
+  }
+}
+
 function handleMouseDown(e: MouseEvent): void {
   const { x, y } = getCanvasPos(e);
   camera.handleMouseDown(x, y);
@@ -108,6 +117,7 @@ function handleMouseUp(e: MouseEvent): void {
     if (!result.ok && result.error) {
       pushToast(PLACEMENT_MESSAGES[result.error]);
     } else if (result.ok) {
+      reportUnlocks(evaluateMilestones(world));
       bumpUi();
     }
   }
@@ -147,6 +157,7 @@ function gameLoop(timestamp: number): void {
     while (accumulator >= TICK_DT) {
       updatePower(world, TICK_DT);
       tick(world, TICK_DT);
+      reportUnlocks(evaluateMilestones(world));
       accumulator -= TICK_DT;
       ticked = true;
     }
