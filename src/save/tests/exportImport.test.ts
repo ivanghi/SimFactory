@@ -1,8 +1,8 @@
 import { describe, test, expect } from 'vitest';
-import { exportGame, importGame } from './exportImport';
-import { CURRENT_SAVE_VERSION, SaveError } from './serialize';
-import type { GameSave, SaveErrorCode } from './serialize';
-import { makeSeededWorld } from '../test-utils/factories';
+import { exportGame, importGame } from '../exportImport';
+import { CURRENT_SAVE_VERSION, SaveError } from '../serialize';
+import type { GameSave, SaveErrorCode } from '../serialize';
+import { makeSeededWorld } from '../../test-utils/factories';
 
 function clone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;

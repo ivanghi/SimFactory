@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { generateMap } from '../sim/mapgen';
+import { generateMap } from '../../sim/mapgen';
 import {
   CURRENT_SAVE_VERSION,
   SaveError,
@@ -7,9 +7,9 @@ import {
   migrations,
   runMigrations,
   serializeWorld
-} from './serialize';
-import type { MigrationTable, RawSaveFile, SaveErrorCode } from './serialize';
-import { makeSeededWorld } from '../test-utils/factories';
+} from '../serialize';
+import type { MigrationTable, RawSaveFile, SaveErrorCode } from '../serialize';
+import { makeSeededWorld } from '../../test-utils/factories';
 
 function clone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;

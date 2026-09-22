@@ -1,10 +1,10 @@
 ﻿import { describe, test, expect } from 'vitest';
-import { computeEfficiency, updatePower } from './power';
-import { tick } from './tick';
-import { demolishBuilding } from './world';
-import { COAL_GENERATOR_ID, SOLAR_PANEL_ID, TICK_DT } from '../data/constants';
-import type { Building, WorldState } from './world';
-import { makeWorld, placeBuildingOk, setNode, setTerrain, unlockAll } from '../test-utils/factories';
+import { computeEfficiency, updatePower } from '../power';
+import { tick } from '../tick';
+import { demolishBuilding } from '../world';
+import { COAL_GENERATOR_ID, SOLAR_PANEL_ID, TICK_DT } from '../../data/constants';
+import type { Building, WorldState } from '../world';
+import { makeWorld, placeBuildingOk, setNode, setTerrain, unlockAll } from '../../test-utils/factories';
 
 function funded(world: WorldState): WorldState {
   world.stockpile['iron-ingot'] = 500;

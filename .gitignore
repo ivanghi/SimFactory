@@ -5,6 +5,7 @@ __pycache__/
 .vs/
 .vscode/
 .kilo/
+.fallow/
 [Bb]in/
 [Bb]uild/
 [Bb]ld/

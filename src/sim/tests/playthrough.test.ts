@@ -1,13 +1,13 @@
 import { describe, test, expect } from 'vitest';
-import { generateMap } from './mapgen';
-import { createWorld, getStorageCap, placeBuilding } from './world';
-import type { BuildingDef } from '../data/buildings';
-import type { WorldState } from './world';
-import { getBuildingDef } from '../data/buildings';
-import { updatePower } from './power';
-import { tick } from './tick';
-import { evaluateMilestones } from './milestones';
-import { TICK_DT } from '../data/constants';
+import { generateMap } from '../mapgen';
+import { createWorld, getStorageCap, placeBuilding } from '../world';
+import type { BuildingDef } from '../../data/buildings';
+import type { WorldState } from '../world';
+import { getBuildingDef } from '../../data/buildings';
+import { updatePower } from '../power';
+import { tick } from '../tick';
+import { evaluateMilestones } from '../milestones';
+import { TICK_DT } from '../../data/constants';
 
 const ARC_SEED = 20240922;
 const TICKS_PER_DECISION = 10;

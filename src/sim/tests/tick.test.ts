@@ -1,8 +1,8 @@
 import { describe, test, expect } from 'vitest';
-import { tick } from './tick';
-import { demolishBuilding, getStorageCap, placeBuilding } from './world';
-import type { WorldState } from './world';
-import { makeWorld, placeBuildingOk, setNode, setTerrain, unlockAll } from '../test-utils/factories';
+import { tick } from '../tick';
+import { demolishBuilding, getStorageCap, placeBuilding } from '../world';
+import type { WorldState } from '../world';
+import { makeWorld, placeBuildingOk, setNode, setTerrain, unlockAll } from '../../test-utils/factories';
 
 function runTicks(world: WorldState, count: number, dt = 0.1): void {
   for (let i = 0; i < count; i++) {

@@ -5,13 +5,13 @@ import {
   computeOfflineElapsedMs,
   formatOfflineSummary,
   processOfflineTime
-} from './offline';
-import type { OfflineSummary } from './offline';
-import { updatePower } from './power';
-import { tick } from './tick';
-import { applyMilestonesSilently } from './milestones';
-import { makeWorld, placeBuildingOk, setNode, setTerrain, unlockAll } from '../test-utils/factories';
-import type { WorldState } from './world';
+} from '../offline';
+import type { OfflineSummary } from '../offline';
+import { updatePower } from '../power';
+import { tick } from '../tick';
+import { applyMilestonesSilently } from '../milestones';
+import { makeWorld, placeBuildingOk, setNode, setTerrain, unlockAll } from '../../test-utils/factories';
+import type { WorldState } from '../world';
 
 const EIGHT_HOURS = 8 * 60 * 60 * 1000;
 

@@ -7,10 +7,10 @@ import {
   loadGame,
   saveGame,
   startAutosave
-} from './storage';
-import { SaveError } from './serialize';
-import type { GameSave } from './serialize';
-import { makeSeededWorld } from '../test-utils/factories';
+} from '../storage';
+import { SaveError } from '../serialize';
+import type { GameSave } from '../serialize';
+import { makeSeededWorld } from '../../test-utils/factories';
 
 function clone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;

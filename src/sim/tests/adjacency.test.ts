@@ -9,11 +9,11 @@ import {
   isAdjacentToWater,
   recomputeAdjacency,
   solarAdjacencyMultiplier
-} from './adjacency';
-import { demolishBuilding } from './world';
-import type { Building, WorldState } from './world';
-import { COAL_GENERATOR_ID, SOLAR_PANEL_ID } from '../data/constants';
-import { makeWorld, placeBuildingOk, setNode, setTerrain, unlockAll } from '../test-utils/factories';
+} from '../adjacency';
+import { demolishBuilding } from '../world';
+import type { Building, WorldState } from '../world';
+import { COAL_GENERATOR_ID, SOLAR_PANEL_ID } from '../../data/constants';
+import { makeWorld, placeBuildingOk, setNode, setTerrain, unlockAll } from '../../test-utils/factories';
 
 function worldWithNeighbors(sameTypeCount: number): { world: WorldState; center: Building } {
   const world = makeWorld();

@@ -1,12 +1,12 @@
 import { describe, test, expect } from 'vitest';
-import { tick } from './tick';
-import { makeWorld, placeBuildingOk } from '../test-utils/factories';
-import type { WorldState } from './world';
+import { tick } from '../tick';
+import { makeWorld, placeBuildingOk } from '../../test-utils/factories';
+import type { WorldState } from '../world';
 import {
   applyMilestonesSilently,
   evaluateMilestones,
   getMilestoneObjectives
-} from './milestones';
+} from '../milestones';
 
 const START_UNLOCKED = [
   'iron-miner',

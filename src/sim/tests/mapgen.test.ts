@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { generateMap, Map, TileType } from './mapgen';
+import { generateMap, Map, TileType } from '../mapgen';
 
 type ResourceType = 'iron-ore' | 'copper-ore' | 'coal' | 'crude-oil';
 
