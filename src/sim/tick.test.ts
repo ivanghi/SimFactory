@@ -27,6 +27,7 @@ describe('tick', () => {
     placeBuildingOk(world, 'smelter', 20, 20);
     world.stockpile['iron-ore'] = 2;
     world.stockpile['coal'] = 1;
+    world.stockpile['iron-ingot'] = 0;
 
     runTicks(world, 300);
 
@@ -42,6 +43,7 @@ describe('tick', () => {
     placeBuildingOk(world, 'smelter', 20, 20);
     world.stockpile['iron-ore'] = 1;
     world.stockpile['coal'] = 5;
+    world.stockpile['iron-ingot'] = 0;
 
     runTicks(world, 300);
 

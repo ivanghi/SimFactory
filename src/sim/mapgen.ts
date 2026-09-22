@@ -26,65 +26,48 @@ function mulberry32(seed: number) {
   };
 }
 
-// Value noise function for terrain generation
-function valueNoise(x: number, y: number, frequency: number, _random: () => number): number {
-  const xInt = Math.floor(x * frequency);
-  const yInt = Math.floor(y * frequency);
-  
-  // Hash coordinates
-  let hash = xInt;
-  hash = hash * 374761393 + yInt * 681639419;
-  hash = hash ^ hash >>> 13;
-  hash = (hash * hash * hash * 12345 + hash) & 0xFFFFFFFF;
-  
-  return (hash >>> 0) / 0xFFFFFFFF;
+function makeLatticeNoise(random: () => number, cells: number): (x: number, y: number) => number {
+  const size = cells + 1;
+  const lattice: number[][] = [];
+  for (let y = 0; y < size; y++) {
+    const row: number[] = [];
+    for (let x = 0; x < size; x++) {
+      row.push(random());
+    }
+    lattice.push(row);
+  }
+
+  return (x: number, y: number): number => {
+    const fx = clamp((x / 64) * cells, 0, cells);
+    const fy = clamp((y / 64) * cells, 0, cells);
+    const x0 = Math.floor(fx);
+    const y0 = Math.floor(fy);
+    const x1 = Math.min(x0 + 1, cells);
+    const y1 = Math.min(y0 + 1, cells);
+    const tx = smoothstep(fx - x0);
+    const ty = smoothstep(fy - y0);
+    const top = lerp(lattice[y0][x0], lattice[y0][x1], tx);
+    const bottom = lerp(lattice[y1][x0], lattice[y1][x1], tx);
+    return lerp(top, bottom, ty);
+  };
 }
 
-// Interpolate between two values
-function interpolate(a: number, b: number, t: number): number {
-  // Cubic interpolation for smoother transitions
-  t = t * t * (3 - 2 * t);
-  return a * (1 - t) + b * t;
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
 }
 
-// Generate 2D value noise
-function generateValueNoise(x: number, y: number, scale: number, random: () => number): number {
-  const scaledX = x / scale;
-  const scaledY = y / scale;
-  
-  const xInt = Math.floor(scaledX);
-  const yInt = Math.floor(scaledY);
-  
-  const xFrac = scaledX - xInt;
-  const yFrac = scaledY - yInt;
-  
-  // Get noise values at grid corners
-  const v1 = valueNoise(xInt, yInt, 1, random);
-  const v2 = valueNoise(xInt + 1, yInt, 1, random);
-  const v3 = valueNoise(xInt, yInt + 1, 1, random);
-  const v4 = valueNoise(xInt + 1, yInt + 1, 1, random);
-  
-  // Interpolate
-  const top = interpolate(v1, v2, xFrac);
-  const bottom = interpolate(v3, v4, xFrac);
-  return interpolate(top, bottom, yFrac);
+function smoothstep(t: number): number {
+  return t * t * (3 - 2 * t);
 }
 
-// Generate terrain based on position
-function getTerrainType(x: number, y: number, random: () => number): TileType {
-  // Create multiple octaves of noise for interesting terrain
-  let terrainValue = 0;
-  terrainValue += generateValueNoise(x, y, 32, random) * 0.5;
-  terrainValue += generateValueNoise(x, y, 16, random) * 0.25;
-  terrainValue += generateValueNoise(x, y, 8, random) * 0.25;
-  
-  // Normalize to 0-1 range
-  terrainValue = terrainValue / 1.0;
-  
-  // Determine terrain type based on value
-  if (terrainValue < 0.2) {
+function lerp(a: number, b: number, t: number): number {
+  return a + (b - a) * t;
+}
+
+function getTerrainType(terrainValue: number): TileType {
+  if (terrainValue < 0.3) {
     return 'water';
-  } else if (terrainValue < 0.5) {
+  } else if (terrainValue < 0.55) {
     return 'rock';
   } else {
     return 'grass';
@@ -101,48 +84,90 @@ function generateResourceCluster(
 ): void {
   // Determine cluster size (3-9 tiles)
   const clusterSize = Math.floor(random() * 7) + 3;
-  
-  // Starting position
-  let currentX = startX;
-  let currentY = startY;
-  
-  // Place initial resource tile
-  if (currentX >= 0 && currentX < 64 && currentY >= 0 && currentY < 64) {
-    // Only place resource on grass tiles
-    if (map.tiles[currentY][currentX].type === 'grass') {
-      const richness = random() * 1.5 + 0.5; // Range 0.5 to 2.0
-      map.tiles[currentY][currentX].resource = {
-        type: resourceType,
-        richness
-      };
+
+  const inBounds = (x: number, y: number): boolean => x >= 0 && x < 64 && y >= 0 && y < 64;
+  const isFreeGrass = (x: number, y: number): boolean =>
+    inBounds(x, y) && map.tiles[y][x].type === 'grass' && !map.tiles[y][x].resource;
+
+  const placed: [number, number][] = [];
+  const isPlaced = (x: number, y: number): boolean =>
+    placed.some(([px, py]) => px === x && py === y);
+  const touchesOtherCluster = (x: number, y: number): boolean =>
+    [
+      [x - 1, y],
+      [x + 1, y],
+      [x, y - 1],
+      [x, y + 1]
+    ].some(([nx, ny]) => {
+      if (!inBounds(nx, ny) || isPlaced(nx, ny)) {
+        return false;
+      }
+      return map.tiles[ny][nx].resource?.type === resourceType;
+    });
+  const canPlace = (x: number, y: number): boolean =>
+    isFreeGrass(x, y) && !touchesOtherCluster(x, y);
+
+  if (!isFreeGrass(startX, startY) || touchesOtherCluster(startX, startY)) {
+    return;
+  }
+
+  const place = (x: number, y: number): void => {
+    map.tiles[y][x].resource = {
+      type: resourceType,
+      richness: random() * 1.5 + 0.5
+    };
+    placed.push([x, y]);
+  };
+
+  place(startX, startY);
+
+  let attempts = 0;
+  const maxAttempts = clusterSize * 40;
+  const directions = [
+    [-1, 0],
+    [1, 0],
+    [0, -1],
+    [0, 1]
+  ];
+
+  while (placed.length < clusterSize && attempts < maxAttempts) {
+    attempts++;
+    const [baseX, baseY] = placed[Math.floor(random() * placed.length)];
+    const [dx, dy] = directions[Math.floor(random() * directions.length)];
+    const nextX = baseX + dx;
+    const nextY = baseY + dy;
+    if (canPlace(nextX, nextY)) {
+      place(nextX, nextY);
     }
   }
-  
-  // Place remaining tiles in the cluster
-  let placedTiles = 1;
-  while (placedTiles < clusterSize) {
-    // Choose a random adjacent position
-    const directions = [
-      [-1, 0], [1, 0], [0, -1], [0, 1],  // Up, Down, Left, Right
-      [-1, -1], [-1, 1], [1, -1], [1, 1] // Diagonals
-    ];
-    
-    const dir = directions[Math.floor(random() * directions.length)];
-    const newX = currentX + dir[0];
-    const newY = currentY + dir[1];
-    
-    // Check bounds
-    if (newX >= 0 && newX < 64 && newY >= 0 && newY < 64) {
-      // Place resource if it's on grass and not already occupied
-      if (map.tiles[newY][newX].type === 'grass' && !map.tiles[newY][newX].resource) {
-        const richness = random() * 1.5 + 0.5; // Range 0.5 to 2.0
-        map.tiles[newY][newX].resource = {
-          type: resourceType,
-          richness
-        };
-        currentX = newX;
-        currentY = newY;
-        placedTiles++;
+
+  if (placed.length < 3) {
+    for (const [x, y] of placed) {
+      delete map.tiles[y][x].resource;
+    }
+  }
+}
+
+const REQUIRED_RESOURCES: ResourceType[] = ['iron-ore', 'copper-ore', 'coal', 'crude-oil'];
+
+function hasResource(map: Map, resourceType: ResourceType): boolean {
+  return map.tiles.some(row => row.some(tile => tile.resource?.type === resourceType));
+}
+
+function ensureResourcePresence(map: Map, random: () => number): void {
+  for (const resourceType of REQUIRED_RESOURCES) {
+    if (hasResource(map, resourceType)) {
+      continue;
+    }
+    for (let attempt = 0; attempt < 4000; attempt++) {
+      const x = Math.floor(random() * 64);
+      const y = Math.floor(random() * 64);
+      const tile = map.tiles[y][x];
+      if (tile.type === 'grass' && !tile.resource) {
+        generateResourceCluster(map, resourceType, x, y, random);
+        if (hasResource(map, resourceType)) {
+          break;
+        }
       }
     }
   }
@@ -500,14 +525,20 @@ function repairStartArea(map: Map, random: () => number): void {
 
 export function generateMap(seed: number): Map {
   const random = mulberry32(seed);
-  
+
+  const coarseNoise = makeLatticeNoise(random, 8);
+  const mediumNoise = makeLatticeNoise(random, 16);
+  const fineNoise = makeLatticeNoise(random, 32);
+
   // Initialize 64x64 grid
   const tiles: Tile[][] = [];
   for (let y = 0; y < 64; y++) {
     tiles.push([]);
     for (let x = 0; x < 64; x++) {
+      const terrainValue =
+        coarseNoise(x, y) * 0.5 + mediumNoise(x, y) * 0.3 + fineNoise(x, y) * 0.2;
       tiles[y].push({
-        type: getTerrainType(x, y, random),
+        type: getTerrainType(terrainValue),
       });
     }
   }
@@ -547,6 +578,8 @@ export function generateMap(seed: number): Map {
   if (!checkStartAreaGuarantees(map)) {
     repairStartArea(map, random);
   }
-  
+
+  ensureResourcePresence(map, random);
+
   return map;
 }

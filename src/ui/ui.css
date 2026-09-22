@@ -43,6 +43,67 @@
   opacity: 0.6;
 }
 
+.settings-menu {
+  position: relative;
+  flex: none;
+}
+
+.settings-btn {
+  padding: 4px 10px;
+  background: #232830;
+  color: #e6e6e6;
+  border: 1px solid #343b46;
+  border-radius: 5px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.settings-btn:hover {
+  border-color: #5c6a7d;
+}
+
+.settings-btn.active {
+  outline: 2px solid #6db3ff;
+  border-color: #6db3ff;
+}
+
+.settings-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 40;
+  min-width: 160px;
+  padding: 8px;
+  background: rgba(20, 24, 30, 0.97);
+  border: 1px solid #3c4655;
+  border-radius: 6px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+}
+
+.settings-title {
+  margin-bottom: 6px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.7;
+}
+
+.settings-new-game {
+  width: 100%;
+  padding: 6px 8px;
+  background: #3a2024;
+  color: #ffb3a6;
+  border: 1px solid #6a3a40;
+  border-radius: 5px;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.settings-new-game:hover {
+  border-color: #a05a62;
+}
+
 .topbar .tooltip-wrap {
   display: flex;
   align-items: center;

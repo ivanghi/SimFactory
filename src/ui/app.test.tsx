@@ -3,7 +3,16 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { App } from './app';
 import { makeWorld } from '../test-utils/factories';
-import { getState, selectBuilding, setSpeed, setWorld, toggleDemolish } from './store';
+import {
+  closeSettings,
+  getState,
+  resetWorld,
+  selectBuilding,
+  setNewGameHandler,
+  setSpeed,
+  setWorld,
+  toggleDemolish
+} from './store';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -36,6 +45,8 @@ describe('UI', () => {
     act(() => root.unmount());
     host.remove();
     act(() => selectBuilding(null));
+    act(() => closeSettings());
+    setNewGameHandler(null);
     setSpeed(1);
   });
 
@@ -82,5 +93,45 @@ describe('UI', () => {
       b.textContent?.includes('Warehouse')
     );
     expect(el?.className).toContain('selected');
+  });
+
+  it('renders the settings button at the right end of the top bar', () => {
+    const topbar = host.querySelector('.topbar');
+    const settings = topbar?.querySelector('.settings-menu') ?? null;
+    expect(settings).not.toBeNull();
+    expect(topbar?.lastElementChild).toBe(settings);
+    const button = settings?.querySelector('button');
+    expect(button?.textContent).toContain('Settings');
+  });
+
+  it('opens and closes the settings menu', () => {
+    expect(getState().settingsOpen).toBe(false);
+    expect(host.textContent).not.toContain('New game');
+
+    clickByText('Settings');
+    expect(getState().settingsOpen).toBe(true);
+    expect(host.textContent).toContain('New game');
+
+    clickByText('Settings');
+    expect(getState().settingsOpen).toBe(false);
+    expect(host.textContent).not.toContain('New game');
+  });
+
+  it('starts a new game from the settings menu and closes it', () => {
+    let started = 0;
+    setNewGameHandler(() => {
+      started += 1;
+      resetWorld(makeWorld(99));
+    });
+
+    clickByText('Settings');
+    clickByText('New game');
+
+    expect(started).toBe(1);
+    expect(getState().settingsOpen).toBe(false);
+    expect(host.textContent).not.toContain('New game');
+    expect(getState().world?.map.seed).toBe(99);
+    expect(getState().selectedBuildingId).toBeNull();
+    expect(getState().demolishMode).toBe(false);
   });
 });

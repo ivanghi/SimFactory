@@ -36,7 +36,7 @@ export const recipes: Recipe[] = [
     outputs: [
       { resource: 'fuel', amount: 1 }
     ],
-    cycleTime: 15
+    cycleTime: 6
   },
   {
     id: 'chemical-plant',
@@ -47,7 +47,7 @@ export const recipes: Recipe[] = [
     outputs: [
       { resource: 'plastic', amount: 1 }
     ],
-    cycleTime: 20
+    cycleTime: 10
   },
   {
     id: 'gear-assembler',
@@ -57,7 +57,7 @@ export const recipes: Recipe[] = [
     outputs: [
       { resource: 'gears', amount: 1 }
     ],
-    cycleTime: 15
+    cycleTime: 8
   },
   {
     id: 'circuit-assembler',
@@ -68,7 +68,7 @@ export const recipes: Recipe[] = [
     outputs: [
       { resource: 'circuits', amount: 1 }
     ],
-    cycleTime: 20
+    cycleTime: 12
   },
   {
     id: 'coal-generator',

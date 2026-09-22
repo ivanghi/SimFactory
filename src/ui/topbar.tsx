@@ -3,6 +3,7 @@ import { resources } from '../data/resources';
 import { getStorageCap } from '../sim/world';
 import { useGame } from './useGame';
 import { Tooltip } from './tooltip';
+import { SettingsMenu } from './settings-menu';
 
 export const TopBar: React.FC = () => {
   const { world } = useGame();
@@ -24,6 +25,7 @@ export const TopBar: React.FC = () => {
         );
       })}
       <div className="cap-note">cap {cap}</div>
+      <SettingsMenu />
     </div>
   );
 };

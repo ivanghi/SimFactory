@@ -23,6 +23,9 @@ export const DEMOLISH_REFUND_RATE = 0.5;
 
 export const STARTING_RESOURCES: Record<string, number> = {
   'iron-ore': 50,
+  'copper-ore': 30,
   coal: 50,
+  'crude-oil': 200,
   water: 50,
+  'iron-ingot': 15,
 };

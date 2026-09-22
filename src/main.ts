@@ -14,13 +14,15 @@ import { CanvasRenderer } from './render/canvas';
 import { formatOfflineSummary, processOfflineTime } from './sim/offline';
 import type { OfflineSummary } from './sim/offline';
 import { SaveError } from './save/serialize';
-import { loadGame, startAutosave } from './save/storage';
+import { clearSave, loadGame, startAutosave } from './save/storage';
 import { App } from './ui/app';
 import {
   bumpUi,
   getState,
   markSimChanged,
   pushToast,
+  resetWorld,
+  setNewGameHandler,
   setSpeed,
   setWorld,
   syncUi
@@ -222,6 +224,16 @@ function restoreOrCreate(): RestoredGame {
   return { world: createWorld(generateMap(seed)), speed: 1, offline: null };
 }
 
+function startNewGame(): void {
+  clearSave();
+  world = createWorld(generateMap(Math.floor(Math.random() * 2147483647)));
+  ghostState = null;
+  accumulator = 0;
+  camera.centerOnMap();
+  resetWorld(world);
+  pushToast('New game started');
+}
+
 function init(): void {
   const restored = restoreOrCreate();
   world = restored.world;
@@ -243,6 +255,7 @@ function init(): void {
 
   setWorld(world);
   setSpeed(restored.speed);
+  setNewGameHandler(startNewGame);
   mountUI();
 
   if (restored.offline) {

@@ -14,6 +14,7 @@ export interface UIState {
   demolishMode: boolean;
   speed: SpeedSetting;
   toasts: Toast[];
+  settingsOpen: boolean;
 }
 
 let state: UIState = {
@@ -21,13 +22,15 @@ let state: UIState = {
   selectedBuildingId: null,
   demolishMode: false,
   speed: 1,
-  toasts: []
+  toasts: [],
+  settingsOpen: false
 };
 
 const listeners = new Set<() => void>();
 let toastSeq = 1;
 let simChanged = false;
 let lastUiSync = 0;
+let newGameHandler: (() => void) | null = null;
 
 export function subscribe(listener: () => void): () => void {
   listeners.add(listener);
@@ -64,6 +67,37 @@ export function toggleDemolish(): void {
 
 export function setSpeed(speed: SpeedSetting): void {
   commit({ speed });
+}
+
+export function toggleSettings(): void {
+  commit({ settingsOpen: !state.settingsOpen });
+}
+
+export function closeSettings(): void {
+  commit({ settingsOpen: false });
+}
+
+export function setNewGameHandler(handler: (() => void) | null): void {
+  newGameHandler = handler;
+}
+
+export function requestNewGame(): void {
+  const handler = newGameHandler;
+  commit({ settingsOpen: false });
+  if (handler) {
+    handler();
+  }
+}
+
+export function resetWorld(world: WorldState): void {
+  commit({
+    world,
+    selectedBuildingId: null,
+    demolishMode: false,
+    toasts: [],
+    speed: 1,
+    settingsOpen: false
+  });
 }
 
 export function pushToast(text: string): void {
