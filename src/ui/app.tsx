@@ -13,6 +13,8 @@ export const App: React.FC = () => {
       <TopBar />
       <div className="panel panel-left">
         <BuildMenu />
+      </div>
+      <div className="panel panel-right">
         <Objectives />
       </div>
       <div className="panel panel-bottom">

@@ -127,8 +127,21 @@
   width: 216px;
 }
 
+.panel-right {
+  top: 48px;
+  right: 10px;
+  bottom: 56px;
+  width: 216px;
+  overflow-y: auto;
+}
+
 .tooltip-wrap {
   position: relative;
+}
+
+.panel-right .tooltip {
+  left: auto;
+  right: calc(100% + 8px);
 }
 
 .panel-bottom {
@@ -236,7 +249,6 @@
 
 .objectives {
   padding: 8px 10px 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .objectives ul {

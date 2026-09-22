@@ -24,8 +24,10 @@ export const milestones: MilestoneDef[] = [
   
   // Unlock after producing 100 fuel
   { id: 'chemical-plant', unlockedBy: 'produce-fuel', quantity: 100 },
-  { id: 'pumpjack', unlockedBy: 'produce-fuel', quantity: 100 },
   
   // Unlock after producing 50 gears
   { id: 'circuit-assembler', unlockedBy: 'produce-gears', quantity: 50 },
+  
+  // Unlock after producing 100 gears
+  { id: 'pumpjack', unlockedBy: 'produce-gears', quantity: 100 },
 ];
