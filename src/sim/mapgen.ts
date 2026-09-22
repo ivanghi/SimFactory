@@ -173,353 +173,221 @@ function ensureResourcePresence(map: Map, random: () => number): void {
   }
 }
 
-// Check if start area guarantees are met
-function checkStartAreaGuarantees(map: Map): boolean {
-  const centerX = 32;
-  const centerY = 32;
-  const halfSize = 8; // For 16x16 area
-  
-  let hasIron = false;
-  let hasCoal = false;
-  let hasWater = false;
-  
-  for (let y = centerY - halfSize; y < centerY + halfSize; y++) {
-    for (let x = centerX - halfSize; x < centerX + halfSize; x++) {
-      const tile = map.tiles[y][x];
-      
-      if (tile.type === 'water') {
-        hasWater = true;
-      }
-      
-      if (tile.resource) {
-        if (tile.resource.type === 'iron-ore') {
-          hasIron = true;
-        } else if (tile.resource.type === 'coal') {
-          hasCoal = true;
-        }
+const START_CENTER_X = 32;
+const START_CENTER_Y = 32;
+const START_HALF_SIZE = 8; // For 16x16 area
+const START_MIN_X = START_CENTER_X - START_HALF_SIZE;
+const START_MAX_X = START_CENTER_X + START_HALF_SIZE;
+const START_MIN_Y = START_CENTER_Y - START_HALF_SIZE;
+const START_MAX_Y = START_CENTER_Y + START_HALF_SIZE;
+
+// Iterate the start area in row-major order. A callback that returns true stops.
+function forEachStartTile(fn: (x: number, y: number) => boolean | void): void {
+  for (let y = START_MIN_Y; y < START_MAX_Y; y++) {
+    for (let x = START_MIN_X; x < START_MAX_X; x++) {
+      if (fn(x, y)) {
+        return;
       }
     }
   }
-  
+}
+
+// Check if start area guarantees are met
+function checkStartAreaGuarantees(map: Map): boolean {
+  let hasIron = false;
+  let hasCoal = false;
+  let hasWater = false;
+
+  forEachStartTile((x, y) => {
+    const tile = map.tiles[y][x];
+
+    if (tile.type === 'water') {
+      hasWater = true;
+    }
+
+    if (tile.resource) {
+      if (tile.resource.type === 'iron-ore') {
+        hasIron = true;
+      } else if (tile.resource.type === 'coal') {
+        hasCoal = true;
+      }
+    }
+  });
+
   return hasIron && hasCoal && hasWater;
+}
+
+function startAreaHasResource(map: Map, resourceType: ResourceType): boolean {
+  let found = false;
+  forEachStartTile((x, y) => {
+    if (map.tiles[y][x].resource?.type === resourceType) {
+      found = true;
+      return true;
+    }
+  });
+  return found;
+}
+
+function startAreaHasWater(map: Map): boolean {
+  let found = false;
+  forEachStartTile((x, y) => {
+    if (map.tiles[y][x].type === 'water') {
+      found = true;
+      return true;
+    }
+  });
+  return found;
+}
+
+// Convert one non-critical tile in the start area to water.
+function addStartAreaWater(map: Map): void {
+  forEachStartTile((x, y) => {
+    const tile = map.tiles[y][x];
+    if (!tile.resource || (tile.resource.type !== 'iron-ore' && tile.resource.type !== 'coal')) {
+      delete tile.resource; // Remove any non-critical resource
+      tile.type = 'water';
+      return true;
+    }
+  });
+}
+
+// Place a minimal (3-tile) cluster of one resource inside the start area,
+// converting water to grass as needed. Tiles holding `protectedType` are left
+// untouched. Uses the caller's PRNG so map output stays deterministic.
+function placeStartCluster(
+  map: Map,
+  random: () => number,
+  resourceType: ResourceType,
+  protectedType?: ResourceType
+): boolean {
+  const inArea = (x: number, y: number): boolean =>
+    x >= START_MIN_X && x < START_MAX_X && y >= START_MIN_Y && y < START_MAX_Y;
+  const isProtected = (x: number, y: number): boolean =>
+    protectedType !== undefined && map.tiles[y][x].resource?.type === protectedType;
+  const isWater = (x: number, y: number): boolean => map.tiles[y][x].type === 'water';
+  const isOpenGrass = (x: number, y: number): boolean =>
+    map.tiles[y][x].type === 'grass' && !map.tiles[y][x].resource;
+
+  const place = (x: number, y: number): void => {
+    map.tiles[y][x].resource = {
+      type: resourceType,
+      richness: random() * 1.5 + 0.5
+    };
+  };
+  const toGrass = (x: number, y: number): void => {
+    map.tiles[y][x].type = 'grass';
+  };
+  const tryPlaceBelow = (x: number, y: number): boolean => {
+    if (inArea(x, y + 1) && isWater(x, y + 1) && !isProtected(x, y + 1)) {
+      toGrass(x, y + 1);
+      place(x, y + 1);
+      return true;
+    }
+    if (inArea(x, y + 1) && isOpenGrass(x, y + 1)) {
+      place(x, y + 1);
+      return true;
+    }
+    return false;
+  };
+
+  // A water start tile becomes grass, then grows into a 3-tile cluster.
+  const placeFromWater = (x: number, y: number): void => {
+    toGrass(x, y);
+    place(x, y);
+
+    // Try placing one to the right
+    if (inArea(x + 1, y) && isWater(x + 1, y) && !isProtected(x + 1, y)) {
+      toGrass(x + 1, y);
+      place(x + 1, y);
+
+      // Try placing one below, else fall back to the left
+      if (!tryPlaceBelow(x, y) && inArea(x - 1, y) && isWater(x - 1, y) && !isProtected(x - 1, y)) {
+        toGrass(x - 1, y);
+        place(x - 1, y);
+      }
+    } else if (inArea(x + 1, y) && isOpenGrass(x + 1, y)) {
+      place(x + 1, y);
+
+      // Try placing one below
+      tryPlaceBelow(x, y);
+    }
+  };
+
+  let placed = false;
+  forEachStartTile((x, y) => {
+    if (isProtected(x, y)) return;
+
+    if (isWater(x, y)) {
+      placeFromWater(x, y);
+      placed = true;
+      return true;
+    }
+
+    if (isOpenGrass(x, y)) {
+      // Place a 3-tile cluster starting on grass
+      place(x, y);
+
+      // Try placing 2 more adjacent tiles
+      let placedAdjacents = 0;
+      // Right
+      if (inArea(x + 1, y) && isOpenGrass(x + 1, y) && placedAdjacents < 2) {
+        place(x + 1, y);
+        placedAdjacents++;
+      }
+      // Below
+      if (inArea(x, y + 1) && isOpenGrass(x, y + 1) && placedAdjacents < 2) {
+        place(x, y + 1);
+        placedAdjacents++;
+      }
+      // Left
+      if (inArea(x - 1, y) && isOpenGrass(x - 1, y) && placedAdjacents < 2) {
+        place(x - 1, y);
+        placedAdjacents++;
+      }
+
+      placed = true;
+      return true;
+    }
+  });
+
+  return placed;
+}
+
+// Last resort: stamp a single resource tile in the start area.
+function placeStartClusterFallback(
+  map: Map,
+  random: () => number,
+  resourceType: ResourceType,
+  protectedType?: ResourceType
+): void {
+  forEachStartTile((x, y) => {
+    if (protectedType !== undefined && map.tiles[y][x].resource?.type === protectedType) return;
+
+    map.tiles[y][x].type = 'grass';
+    map.tiles[y][x].resource = {
+      type: resourceType,
+      richness: random() * 1.5 + 0.5
+    };
+    return true;
+  });
 }
 
 // Repair map to meet start area guarantees
 function repairStartArea(map: Map, random: () => number): void {
-  const centerX = 32;
-  const centerY = 32;
-  const halfSize = 8; // For 16x16 area
-  
-  // Check if we have an iron cluster in the start area
-  let hasIron = false;
-  for (let y = centerY - halfSize; y < centerY + halfSize; y++) {
-    for (let x = centerX - halfSize; x < centerX + halfSize; x++) {
-      if (map.tiles[y][x].resource?.type === 'iron-ore') {
-        hasIron = true;
-        break;
-      }
-    }
-    if (hasIron) break;
-  }
-  
-  // Add iron if missing (create a minimal cluster)
-  if (!hasIron) {
-    // Find a suitable location in the start area to place a small iron cluster
-    let placed = false;
-    for (let y = centerY - halfSize; y < centerY + halfSize && !placed; y++) {
-      for (let x = centerX - halfSize; x < centerX + halfSize && !placed; x++) {
-        // Try to place a minimal iron cluster (at least 3 tiles) starting from this position
-        if (map.tiles[y][x].type === 'water') {
-          // Convert this tile to grass with iron resource
-          map.tiles[y][x].type = 'grass';
-          map.tiles[y][x].resource = {
-            type: 'iron-ore',
-            richness: random() * 1.5 + 0.5
-          };
-          
-          // Place 2 more connected iron tiles to form a minimal 3-tile cluster
-          // Try placing one to the right
-          if (x + 1 < centerX + halfSize && map.tiles[y][x + 1].type === 'water') {
-            map.tiles[y][x + 1].type = 'grass';
-            map.tiles[y][x + 1].resource = {
-              type: 'iron-ore',
-              richness: random() * 1.5 + 0.5
-            };
-            
-            // Try placing one below
-            if (y + 1 < centerY + halfSize && map.tiles[y + 1][x].type === 'water') {
-              map.tiles[y + 1][x].type = 'grass';
-              map.tiles[y + 1][x].resource = {
-                type: 'iron-ore',
-                richness: random() * 1.5 + 0.5
-              };
-            } else if (y + 1 < centerY + halfSize && map.tiles[y + 1][x].type === 'grass' && !map.tiles[y + 1][x].resource) {
-              map.tiles[y + 1][x].resource = {
-                type: 'iron-ore',
-                richness: random() * 1.5 + 0.5
-              };
-            } else if (x - 1 >= centerX - halfSize && map.tiles[y][x - 1].type === 'water') {
-              map.tiles[y][x - 1].type = 'grass';
-              map.tiles[y][x - 1].resource = {
-                type: 'iron-ore',
-                richness: random() * 1.5 + 0.5
-              };
-            }
-          } else if (x + 1 < centerX + halfSize && map.tiles[y][x + 1].type === 'grass' && !map.tiles[y][x + 1].resource) {
-            map.tiles[y][x + 1].resource = {
-              type: 'iron-ore',
-              richness: random() * 1.5 + 0.5
-            };
-            
-            // Try placing one more
-            if (y + 1 < centerY + halfSize && map.tiles[y + 1][x].type === 'water') {
-              map.tiles[y + 1][x].type = 'grass';
-              map.tiles[y + 1][x].resource = {
-                type: 'iron-ore',
-                richness: random() * 1.5 + 0.5
-              };
-            } else if (y + 1 < centerY + halfSize && map.tiles[y + 1][x].type === 'grass' && !map.tiles[y + 1][x].resource) {
-              map.tiles[y + 1][x].resource = {
-                type: 'iron-ore',
-                richness: random() * 1.5 + 0.5
-              };
-            }
-          }
-          placed = true;
-        } else if (map.tiles[y][x].type === 'grass' && !map.tiles[y][x].resource) {
-          // Place a 3-tile cluster starting on grass
-          map.tiles[y][x].resource = {
-            type: 'iron-ore',
-            richness: random() * 1.5 + 0.5
-          };
-          
-          // Try placing 2 more adjacent tiles
-          let placedAdjacents = 0;
-          // Right
-          if (x + 1 < centerX + halfSize && map.tiles[y][x + 1].type === 'grass' && !map.tiles[y][x + 1].resource && placedAdjacents < 2) {
-            map.tiles[y][x + 1].resource = {
-              type: 'iron-ore',
-              richness: random() * 1.5 + 0.5
-            };
-            placedAdjacents++;
-          }
-          // Below
-          if (y + 1 < centerY + halfSize && map.tiles[y + 1][x].type === 'grass' && !map.tiles[y + 1][x].resource && placedAdjacents < 2) {
-            map.tiles[y + 1][x].resource = {
-              type: 'iron-ore',
-              richness: random() * 1.5 + 0.5
-            };
-            placedAdjacents++;
-          }
-          // Left
-          if (x - 1 >= centerX - halfSize && map.tiles[y][x - 1].type === 'grass' && !map.tiles[y][x - 1].resource && placedAdjacents < 2) {
-            map.tiles[y][x - 1].resource = {
-              type: 'iron-ore',
-              richness: random() * 1.5 + 0.5
-            };
-            placedAdjacents++;
-          }
-          
-          placed = true;
-        }
-      }
-    }
-    
-    // If we couldn't place a proper cluster, just place a single tile (fallback)
-    if (!placed) {
-      for (let y = centerY - halfSize; y < centerY + halfSize && !placed; y++) {
-        for (let x = centerX - halfSize; x < centerX + halfSize && !placed; x++) {
-          if (map.tiles[y][x].type !== 'water') {
-            map.tiles[y][x].type = 'grass';
-          } else {
-            map.tiles[y][x].type = 'grass';
-          }
-          map.tiles[y][x].resource = {
-            type: 'iron-ore',
-            richness: random() * 1.5 + 0.5
-          };
-          placed = true;
-        }
-      }
+  if (!startAreaHasResource(map, 'iron-ore')) {
+    if (!placeStartCluster(map, random, 'iron-ore')) {
+      placeStartClusterFallback(map, random, 'iron-ore');
     }
   }
-  
-  // Check if we have a coal cluster in the start area
-  let hasCoal = false;
-  for (let y = centerY - halfSize; y < centerY + halfSize; y++) {
-    for (let x = centerX - halfSize; x < centerX + halfSize; x++) {
-      if (map.tiles[y][x].resource?.type === 'coal') {
-        hasCoal = true;
-        break;
-      }
-    }
-    if (hasCoal) break;
-  }
-  
-  // Add coal if missing (create a minimal cluster)
-  if (!hasCoal) {
-    // Find a suitable location in the start area to place a small coal cluster
-    let placed = false;
-    for (let y = centerY - halfSize; y < centerY + halfSize && !placed; y++) {
-      for (let x = centerX - halfSize; x < centerX + halfSize && !placed; x++) {
-        // Skip if this tile already has iron (to avoid overwriting)
-        if (map.tiles[y][x].resource?.type === 'iron-ore') continue;
-        
-        if (map.tiles[y][x].type === 'water') {
-          // Convert this tile to grass with coal resource
-          map.tiles[y][x].type = 'grass';
-          map.tiles[y][x].resource = {
-            type: 'coal',
-            richness: random() * 1.5 + 0.5
-          };
-          
-          // Place 2 more connected coal tiles to form a minimal 3-tile cluster
-          // Try placing one to the right
-          if (x + 1 < centerX + halfSize && map.tiles[y][x + 1].type === 'water' && 
-              map.tiles[y][x + 1].resource?.type !== 'iron-ore') {
-            map.tiles[y][x + 1].type = 'grass';
-            map.tiles[y][x + 1].resource = {
-              type: 'coal',
-              richness: random() * 1.5 + 0.5
-            };
-            
-            // Try placing one below
-            if (y + 1 < centerY + halfSize && map.tiles[y + 1][x].type === 'water' &&
-                map.tiles[y + 1][x].resource?.type !== 'iron-ore') {
-              map.tiles[y + 1][x].type = 'grass';
-              map.tiles[y + 1][x].resource = {
-                type: 'coal',
-                richness: random() * 1.5 + 0.5
-              };
-            } else if (y + 1 < centerY + halfSize && map.tiles[y + 1][x].type === 'grass' && 
-                      !map.tiles[y + 1][x].resource && map.tiles[y + 1][x].resource?.type !== 'iron-ore') {
-              map.tiles[y + 1][x].resource = {
-                type: 'coal',
-                richness: random() * 1.5 + 0.5
-              };
-            } else if (x - 1 >= centerX - halfSize && map.tiles[y][x - 1].type === 'water' &&
-                      map.tiles[y][x - 1].resource?.type !== 'iron-ore') {
-              map.tiles[y][x - 1].type = 'grass';
-              map.tiles[y][x - 1].resource = {
-                type: 'coal',
-                richness: random() * 1.5 + 0.5
-              };
-            }
-          } else if (x + 1 < centerX + halfSize && map.tiles[y][x + 1].type === 'grass' && 
-                    !map.tiles[y][x + 1].resource && map.tiles[y][x + 1].resource?.type !== 'iron-ore') {
-            map.tiles[y][x + 1].resource = {
-              type: 'coal',
-              richness: random() * 1.5 + 0.5
-            };
-            
-            // Try placing one more
-            if (y + 1 < centerY + halfSize && map.tiles[y + 1][x].type === 'water' &&
-                map.tiles[y + 1][x].resource?.type !== 'iron-ore') {
-              map.tiles[y + 1][x].type = 'grass';
-              map.tiles[y + 1][x].resource = {
-                type: 'coal',
-                richness: random() * 1.5 + 0.5
-              };
-            } else if (y + 1 < centerY + halfSize && map.tiles[y + 1][x].type === 'grass' && 
-                      !map.tiles[y + 1][x].resource && map.tiles[y + 1][x].resource?.type !== 'iron-ore') {
-              map.tiles[y + 1][x].resource = {
-                type: 'coal',
-                richness: random() * 1.5 + 0.5
-              };
-            }
-          }
-          placed = true;
-        } else if (map.tiles[y][x].type === 'grass' && !map.tiles[y][x].resource) {
-          // Place a 3-tile cluster starting on grass
-          map.tiles[y][x].resource = {
-            type: 'coal',
-            richness: random() * 1.5 + 0.5
-          };
-          
-          // Try placing 2 more adjacent tiles
-          let placedAdjacents = 0;
-          // Right
-          if (x + 1 < centerX + halfSize && map.tiles[y][x + 1].type === 'grass' && 
-              !map.tiles[y][x + 1].resource && map.tiles[y][x + 1].resource?.type !== 'iron-ore' && placedAdjacents < 2) {
-            map.tiles[y][x + 1].resource = {
-              type: 'coal',
-              richness: random() * 1.5 + 0.5
-            };
-            placedAdjacents++;
-          }
-          // Below
-          if (y + 1 < centerY + halfSize && map.tiles[y + 1][x].type === 'grass' && 
-              !map.tiles[y + 1][x].resource && map.tiles[y + 1][x].resource?.type !== 'iron-ore' && placedAdjacents < 2) {
-            map.tiles[y + 1][x].resource = {
-              type: 'coal',
-              richness: random() * 1.5 + 0.5
-            };
-            placedAdjacents++;
-          }
-          // Left
-          if (x - 1 >= centerX - halfSize && map.tiles[y][x - 1].type === 'grass' && 
-              !map.tiles[y][x - 1].resource && map.tiles[y][x - 1].resource?.type !== 'iron-ore' && placedAdjacents < 2) {
-            map.tiles[y][x - 1].resource = {
-              type: 'coal',
-              richness: random() * 1.5 + 0.5
-            };
-            placedAdjacents++;
-          }
-          
-          placed = true;
-        }
-      }
-    }
-    
-    // If we couldn't place a proper cluster, just place a single tile (fallback)
-    if (!placed) {
-      for (let y = centerY - halfSize; y < centerY + halfSize && !placed; y++) {
-        for (let x = centerX - halfSize; x < centerX + halfSize && !placed; x++) {
-          // Make sure we don't overwrite iron
-          if (!map.tiles[y][x].resource || map.tiles[y][x].resource!.type !== 'iron-ore') {
-            if (map.tiles[y][x].type !== 'water') {
-              map.tiles[y][x].type = 'grass';
-            } else {
-              map.tiles[y][x].type = 'grass';
-            }
-            map.tiles[y][x].resource = {
-              type: 'coal',
-              richness: random() * 1.5 + 0.5
-            };
-            placed = true;
-          }
-        }
-      }
+
+  if (!startAreaHasResource(map, 'coal')) {
+    if (!placeStartCluster(map, random, 'coal', 'iron-ore')) {
+      placeStartClusterFallback(map, random, 'coal', 'iron-ore');
     }
   }
-  
-  // Check if we have water in the start area
-  let hasWater = false;
-  for (let y = centerY - halfSize; y < centerY + halfSize; y++) {
-    for (let x = centerX - halfSize; x < centerX + halfSize; x++) {
-      if (map.tiles[y][x].type === 'water') {
-        hasWater = true;
-        break;
-      }
-    }
-    if (hasWater) break;
-  }
-  
-  // Add water if missing (convert one non-resource tile to water)
-  if (!hasWater) {
-    // Find a tile without a critical resource and convert to water
-    let placed = false;
-    for (let y = centerY - halfSize; y < centerY + halfSize && !placed; y++) {
-      for (let x = centerX - halfSize; x < centerX + halfSize && !placed; x++) {
-        // Only convert tiles that don't have iron or coal resources
-        if (!map.tiles[y][x].resource || 
-            (map.tiles[y][x].resource!.type !== 'iron-ore' && map.tiles[y][x].resource!.type !== 'coal')) {
-          delete map.tiles[y][x].resource;  // Remove any non-critical resource
-          map.tiles[y][x].type = 'water';
-          placed = true;
-        }
-      }
-    }
+
+  if (!startAreaHasWater(map)) {
+    addStartAreaWater(map);
   }
 }
 

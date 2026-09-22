@@ -110,14 +110,12 @@ export class CanvasRenderer {
     this.drawTerrain(world);
 
     const range = this.camera.getVisibleTileRange();
-    for (let ty = range.startY; ty <= range.endY; ty++) {
-      for (let tx = range.startX; tx <= range.endX; tx++) {
-        const tile = world.map.tiles[ty][tx];
-        if (tile.resource) {
-          this.drawResourceNode(tx, ty, tile.resource.type);
-        }
+    this.forEachVisibleTile((tx, ty) => {
+      const tile = world.map.tiles[ty][tx];
+      if (tile.resource) {
+        this.drawResourceNode(tx, ty, tile.resource.type);
       }
-    }
+    });
 
     for (const building of world.buildings) {
       if (
@@ -184,29 +182,35 @@ export class CanvasRenderer {
   private drawTerrain(world: WorldState): void {
     const ctx = this.ctx;
     const zoom = this.camera.camera.zoom;
-    const range = this.camera.getVisibleTileRange();
 
-    for (let ty = range.startY; ty <= range.endY; ty++) {
-      for (let tx = range.startX; tx <= range.endX; tx++) {
-        const tile = world.map.tiles[ty][tx];
-        const pos = this.camera.tileToScreen(tx, ty);
+    this.forEachVisibleTile((tx, ty) => {
+      const tile = world.map.tiles[ty][tx];
+      const pos = this.camera.tileToScreen(tx, ty);
 
-        switch (tile.type) {
-          case 'grass':
-            ctx.fillStyle = GRASS_COLOR;
-            break;
-          case 'rock':
-            ctx.fillStyle = ROCK_COLOR;
-            break;
-          case 'water':
-            ctx.fillStyle = WATER_COLOR;
-            break;
-        }
-        ctx.fillRect(pos.sx, pos.sy, TILE_SIZE * zoom, TILE_SIZE * zoom);
+      switch (tile.type) {
+        case 'grass':
+          ctx.fillStyle = GRASS_COLOR;
+          break;
+        case 'rock':
+          ctx.fillStyle = ROCK_COLOR;
+          break;
+        case 'water':
+          ctx.fillStyle = WATER_COLOR;
+          break;
       }
-    }
+      ctx.fillRect(pos.sx, pos.sy, TILE_SIZE * zoom, TILE_SIZE * zoom);
+    });
 
     this.drawGrid();
+  }
+
+  private forEachVisibleTile(fn: (tx: number, ty: number) => void): void {
+    const range = this.camera.getVisibleTileRange();
+    for (let ty = range.startY; ty <= range.endY; ty++) {
+      for (let tx = range.startX; tx <= range.endX; tx++) {
+        fn(tx, ty);
+      }
+    }
   }
 
   private drawResourceNode(tx: number, ty: number, resourceType: string): void {
@@ -255,11 +259,7 @@ export class CanvasRenderer {
     ctx.fillStyle = colors.fill;
     ctx.strokeStyle = colors.stroke;
     ctx.lineWidth = 2;
-    const bx = pos.sx + pad;
-    const by = pos.sy + pad;
-    const bw = size - pad * 2;
-    const bh = size - pad * 2;
-    this.roundRect(ctx, bx, by, bw, bh, size * 0.08);
+    this.roundRectInset(ctx, pos, size, pad, size * 0.08);
     ctx.fill();
     ctx.stroke();
 
@@ -331,13 +331,23 @@ export class CanvasRenderer {
     const pad = size * 0.1;
     ctx.fillStyle = colors.stroke;
     ctx.globalAlpha = 0.5;
+    this.roundRectInset(ctx, pos, size, pad, size * 0.06);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  private roundRectInset(
+    ctx: CanvasRenderingContext2D,
+    pos: { sx: number; sy: number },
+    size: number,
+    pad: number,
+    radius: number
+  ): void {
     const bx = pos.sx + pad;
     const by = pos.sy + pad;
     const bw = size - pad * 2;
     const bh = size - pad * 2;
-    this.roundRect(ctx, bx, by, bw, bh, size * 0.06);
-    ctx.fill();
-    ctx.globalAlpha = 1;
+    this.roundRect(ctx, bx, by, bw, bh, radius);
   }
 
   private roundRect(
