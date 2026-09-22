@@ -109,15 +109,22 @@ export function markSimChanged(): void {
   simChanged = true;
 }
 
+const UI_SYNC_INTERVAL_MS = 1000;
+
+function refresh(): void {
+  state = { ...state };
+  emit();
+}
+
 export function bumpUi(): void {
   simChanged = false;
-  emit();
+  refresh();
 }
 
 export function syncUi(now: number): void {
   if (!simChanged) return;
-  if (now - lastUiSync < 150) return;
+  if (now - lastUiSync < UI_SYNC_INTERVAL_MS) return;
   lastUiSync = now;
   simChanged = false;
-  emit();
+  refresh();
 }

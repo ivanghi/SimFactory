@@ -6,11 +6,13 @@ import { makeWorld } from '../test-utils/factories';
 import {
   closeSettings,
   getState,
+  markSimChanged,
   resetWorld,
   selectBuilding,
   setNewGameHandler,
   setSpeed,
   setWorld,
+  syncUi,
   toggleDemolish
 } from './store';
 
@@ -133,5 +135,32 @@ describe('UI', () => {
     expect(getState().world?.map.seed).toBe(99);
     expect(getState().selectedBuildingId).toBeNull();
     expect(getState().demolishMode).toBe(false);
+  });
+
+  describe('sim-driven refresh', () => {
+    it('re-renders the stockpile when syncUi emits after a sim change', () => {
+      getState().world!.stockpile['iron-ore'] = 123;
+      markSimChanged();
+      act(() => syncUi(1_000_000));
+      expect(host.textContent).toContain('123');
+    });
+
+    it('throttles syncUi refreshes to once per second', () => {
+      getState().world!.stockpile['iron-ore'] = 456;
+      markSimChanged();
+      act(() => syncUi(1_000_500));
+      expect(host.textContent).not.toContain('456');
+      act(() => syncUi(1_001_500));
+      expect(host.textContent).toContain('456');
+    });
+
+    it('does not emit from syncUi when the sim has not changed', () => {
+      getState().world!.stockpile['iron-ore'] = 789;
+      act(() => syncUi(2_000_000));
+      expect(host.textContent).not.toContain('789');
+      markSimChanged();
+      act(() => syncUi(2_000_000));
+      expect(host.textContent).toContain('789');
+    });
   });
 });
