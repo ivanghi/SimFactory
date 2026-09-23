@@ -5,7 +5,7 @@ export interface Recipe {
   cycleTime: number;
 }
 
-export const recipes: Recipe[] = [
+const recipes: Recipe[] = [
   {
     id: 'smelter',
     inputs: [
@@ -69,6 +69,17 @@ export const recipes: Recipe[] = [
       { resource: 'circuits', amount: 1 }
     ],
     cycleTime: 12
+  },
+  {
+    id: 'lab',
+    inputs: [
+      { resource: 'circuits', amount: 1 },
+      { resource: 'gears', amount: 1 }
+    ],
+    outputs: [
+      { resource: 'science', amount: 1 }
+    ],
+    cycleTime: 15
   },
   {
     id: 'coal-generator',

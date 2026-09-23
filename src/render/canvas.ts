@@ -29,12 +29,13 @@ const BUILDING_COLORS: Record<string, { fill: string; stroke: string }> = {
   'chemical-plant': { fill: '#3A8A3A', stroke: '#1A6A1A' },
   'gear-assembler': { fill: '#7A8A9A', stroke: '#5A6A7A' },
   'circuit-assembler': { fill: '#4A8A6A', stroke: '#2A6A4A' },
+  lab: { fill: '#8A4AC0', stroke: '#6A2AA0' },
   'solar-panel': { fill: '#1E90FF', stroke: '#0070DF' },
   'coal-generator': { fill: '#8B3A3A', stroke: '#6B1A1A' },
   warehouse: { fill: '#A0724A', stroke: '#80522A' },
 };
 
-export function validateGhostPlacement(
+function validateGhostPlacement(
   world: WorldState,
   buildingId: string,
   tx: number,
@@ -299,6 +300,9 @@ export class CanvasRenderer {
       case 'circuit-assembler':
         this.drawCircuitIcon(ctx, icx, icy, is);
         break;
+      case 'lab':
+        this.drawLabIcon(ctx, icx, icy, is);
+        break;
       case 'solar-panel':
         this.drawSunIcon(ctx, icx, icy, is);
         break;
@@ -473,6 +477,26 @@ export class CanvasRenderer {
       ctx.lineTo(px + (i < 2 ? -s * 0.15 : s * 0.15), py);
       ctx.stroke();
     }
+  }
+
+  private drawLabIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, s: number): void {
+    ctx.beginPath();
+    ctx.moveTo(cx - s * 0.3, cy - s * 0.7);
+    ctx.lineTo(cx + s * 0.3, cy - s * 0.7);
+    ctx.moveTo(cx - s * 0.2, cy - s * 0.7);
+    ctx.lineTo(cx - s * 0.2, cy - s * 0.1);
+    ctx.lineTo(cx - s * 0.6, cy + s * 0.6);
+    ctx.lineTo(cx + s * 0.6, cy + s * 0.6);
+    ctx.lineTo(cx + s * 0.2, cy - s * 0.1);
+    ctx.lineTo(cx + s * 0.2, cy - s * 0.7);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(cx - s * 0.4, cy + s * 0.25);
+    ctx.lineTo(cx + s * 0.4, cy + s * 0.25);
+    ctx.lineTo(cx + s * 0.6, cy + s * 0.6);
+    ctx.lineTo(cx - s * 0.6, cy + s * 0.6);
+    ctx.closePath();
+    ctx.fill();
   }
 
   private drawSunIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number, s: number): void {

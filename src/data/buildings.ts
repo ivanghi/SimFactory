@@ -124,6 +124,16 @@ export const buildings: BuildingDef[] = [
     recipeId: 'circuit-assembler',
     placementRule: 'factory'
   },
+  {
+    id: 'lab',
+    name: 'Lab',
+    category: 'processor',
+    cost: [{ resource: 'circuits', amount: 10 }, { resource: 'gears', amount: 20 }],
+    footprint: { width: 1, height: 1 },
+    powerDraw: 4,
+    recipeId: 'lab',
+    placementRule: 'factory'
+  },
 
   // Power/storage
   {

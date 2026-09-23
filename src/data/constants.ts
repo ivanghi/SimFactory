@@ -1,5 +1,5 @@
-export const TICKS_PER_SECOND = 10;
-export const TICK_DT = 0.1;
+const TICKS_PER_SECOND = 10;
+export const TICK_DT = 1 / TICKS_PER_SECOND;
 
 export const BASE_STORAGE_CAP = 500;
 export const WAREHOUSE_CAP_BONUS = 250;

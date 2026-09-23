@@ -15,4 +15,5 @@ export const resources = [
   // Final resources
   { id: 'gears', name: 'Gears', category: 'final' },
   { id: 'circuits', name: 'Circuits', category: 'final' },
+  { id: 'science', name: 'Science', category: 'final' },
 ];

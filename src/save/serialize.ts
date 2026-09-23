@@ -4,7 +4,7 @@ import { getBuildingDef } from '../data/buildings';
 import type { Building, PowerState, WorldState } from '../sim/world';
 
 export const CURRENT_SAVE_VERSION = 1;
-export const LEGACY_SAVE_VERSION = 0;
+const LEGACY_SAVE_VERSION = 0;
 
 const MAP_SIZE = 64;
 const SPEED_MIN = 0;

@@ -4,7 +4,7 @@ import type { Building, WorldState } from '../sim/world';
 
 type NodeResourceType = NonNullable<Tile['resource']>['type'];
 
-export function makeTestMap(seed = 1): Map {
+function makeTestMap(seed = 1): Map {
   const tiles: Tile[][] = [];
   for (let y = 0; y < 64; y++) {
     const row: Tile[] = [];

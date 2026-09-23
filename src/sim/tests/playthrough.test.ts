@@ -26,6 +26,7 @@ const PRIORITY = [
   'chemical-plant',
   'gear-assembler',
   'circuit-assembler',
+  'lab',
   'warehouse'
 ];
 
@@ -116,7 +117,8 @@ function targets(world: WorldState): Record<string, number> {
     'water-pump': chemicalDone || world.unlocked['chemical-plant'] ? 1 : 0,
     'chemical-plant': chemicalDone ? 1 : 0,
     'gear-assembler': chemicalDone ? 2 : 1,
-    'circuit-assembler': world.unlocked['circuit-assembler'] ? 1 : 0
+    'circuit-assembler': world.unlocked['circuit-assembler'] ? 1 : 0,
+    lab: world.unlocked['lab'] ? 1 : 0
   };
 }
 
@@ -157,7 +159,9 @@ function runArc(seed: number): ArcReport {
 
   const finished = (): boolean =>
     !!world.unlocked['circuit-assembler'] &&
-    (world.milestoneProgress['produce-circuits'] ?? 0) >= 5;
+    (world.milestoneProgress['produce-circuits'] ?? 0) >= 5 &&
+    !!world.unlocked['lab'] &&
+    (world.milestoneProgress['produce-science'] ?? 0) >= 5;
 
   while (simSeconds < MAX_SIM_SECONDS && !finished()) {
     for (let i = 0; i < TICKS_PER_DECISION; i++) {
@@ -205,7 +209,7 @@ function stageTime(report: ArcReport, milestone: string): number | null {
 }
 
 describe('full arc playthrough', () => {
-  test('a fresh seed completes the whole unlock chain to steady-state circuits', () => {
+  test('a fresh seed completes the whole unlock chain to steady-state science', () => {
     const report = runArc(ARC_SEED);
     console.log(`BALANCE_ARC ${JSON.stringify(report)}`);
 
@@ -215,21 +219,26 @@ describe('full arc playthrough', () => {
     expect(report.milestonesReached).toContain('pumpjack');
     expect(report.milestonesReached).toContain('chemical-plant');
     expect(report.milestonesReached).toContain('circuit-assembler');
+    expect(report.milestonesReached).toContain('lab');
     expect(report.counters['produce-circuits'] ?? 0).toBeGreaterThanOrEqual(5);
+    expect(report.counters['produce-science'] ?? 0).toBeGreaterThanOrEqual(5);
 
     const iron = stageTime(report, 'copper-miner');
     const refinery = stageTime(report, 'refinery');
     const fuel = stageTime(report, 'chemical-plant');
     const circuits = stageTime(report, 'circuit-assembler');
+    const lab = stageTime(report, 'lab');
     expect(iron).not.toBeNull();
     expect(refinery).not.toBeNull();
     expect(fuel).not.toBeNull();
     expect(circuits).not.toBeNull();
+    expect(lab).not.toBeNull();
 
     expect(iron ?? Infinity).toBeLessThanOrEqual(8 * 60);
     expect(refinery ?? Infinity).toBeLessThanOrEqual(15 * 60);
     expect(fuel ?? Infinity).toBeLessThanOrEqual(30 * 60);
     expect(circuits ?? Infinity).toBeLessThanOrEqual(45 * 60);
+    expect(lab ?? Infinity).toBeLessThanOrEqual(75 * 60);
     expect(report.simSeconds).toBeLessThan(MAX_SIM_SECONDS);
 
     expect(report.power.efficiency).toBeGreaterThan(0.5);
@@ -248,7 +257,9 @@ describe('full arc playthrough', () => {
     for (const seed of [1, 7, 12345, 20240922]) {
       const report = runArc(seed);
       expect(report.milestonesReached, `seed ${seed} unlocks`).toContain('circuit-assembler');
+      expect(report.milestonesReached, `seed ${seed} unlocks`).toContain('lab');
       expect(report.counters['produce-circuits'] ?? 0, `seed ${seed} circuits`).toBeGreaterThanOrEqual(5);
+      expect(report.counters['produce-science'] ?? 0, `seed ${seed} science`).toBeGreaterThanOrEqual(5);
       expect(report.simSeconds, `seed ${seed} duration`).toBeLessThan(MAX_SIM_SECONDS);
     }
   });

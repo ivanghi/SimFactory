@@ -2,14 +2,14 @@
 
 A real-time factory-building game on a procedural 64x64 map. You place extractors on
 resource nodes, feed processors from a shared stockpile, keep the power grid from
-browning out, and unlock the tech chain up to circuits.
+browning out, and unlock the tech chain up to science.
 
 Built with Vite, TypeScript (strict), React for the HUD, and a canvas renderer.
 
 ## Features
 
-- 11 resources across raw, intermediate, and final tiers
-- 14 buildings: extractors, processors, power, and storage
+- 12 resources across raw, intermediate, and final tiers
+- 15 buildings: extractors, processors, power, and storage
 - Global supply/demand power grid with brownout throttling
 - Adjacency bonuses for extractors, solar panels, and water-cooled coal generators
 - Milestone unlocks with toast notifications and an objectives panel
@@ -64,8 +64,10 @@ Panel, Warehouse.
 |---|---|
 | Smelt 50 iron ingots | Copper Miner, Copper Smelter, Coal Generator |
 | Place your first Coal Generator | Refinery |
-| Produce 100 fuel | Chemical Plant, Pumpjack |
+| Produce 100 fuel | Chemical Plant |
 | Produce 50 gears | Circuit Assembler |
+| Produce 100 gears | Pumpjack |
+| Produce 50 circuits | Lab |
 
 Milestones are one-way and never revoked. Unlocks achieved while the tab was closed
 are applied silently and folded into a single offline summary toast.
@@ -94,9 +96,9 @@ so they can be tuned without touching simulation code.
 
 ## Testing
 
-Tests run with Vitest and include `src/sim/playthrough.test.ts`, a headless end-to-end
-run that drives the real map generation, power, and tick loop from a fresh seed through
-every milestone to steady-state circuit production. It asserts stage-time budgets,
-determinism, brownout recovery, and storage-cap pressure across several seeds.
+Tests run with Vitest and include `src/sim/tests/playthrough.test.ts`, a headless
+end-to-end run that drives the real map generation, power, and tick loop from a fresh
+seed through every milestone to steady-state science production. It asserts stage-time
+budgets, determinism, brownout recovery, and storage-cap pressure across several seeds.
 
 `doc/balance-notes.md` records the final tuned values and the rationale for them.

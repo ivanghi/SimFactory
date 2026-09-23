@@ -28,6 +28,9 @@ export const milestones: MilestoneDef[] = [
   // Unlock after producing 50 gears
   { id: 'circuit-assembler', unlockedBy: 'produce-gears', quantity: 50 },
   
+  // Unlock after producing 50 circuits
+  { id: 'lab', unlockedBy: 'produce-circuits', quantity: 50 },
+  
   // Unlock after producing 100 gears
   { id: 'pumpjack', unlockedBy: 'produce-gears', quantity: 100 },
 ];

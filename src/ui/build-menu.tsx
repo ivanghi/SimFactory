@@ -18,6 +18,7 @@ const SWATCH: Record<string, string> = {
   'chemical-plant': '#3A8A3A',
   'gear-assembler': '#7A8A9A',
   'circuit-assembler': '#4A8A6A',
+  lab: '#8A4AC0',
   'solar-panel': '#1E90FF',
   'coal-generator': '#8B3A3A',
   warehouse: '#A0724A'

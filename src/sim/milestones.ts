@@ -25,7 +25,7 @@ export interface MilestoneObjective {
 
 export type MilestoneUnlockListener = (event: MilestoneUnlockEvent) => void;
 
-export function parseMilestoneTrigger(def: MilestoneDef): MilestoneTrigger {
+function parseMilestoneTrigger(def: MilestoneDef): MilestoneTrigger {
   if (def.unlockedBy === 'start') {
     return { kind: 'start' };
   }
@@ -47,7 +47,7 @@ export function parseMilestoneTrigger(def: MilestoneDef): MilestoneTrigger {
   throw new Error(`Unknown milestone trigger: ${def.unlockedBy}`);
 }
 
-export function milestoneCounterKey(trigger: MilestoneTrigger): string | null {
+function milestoneCounterKey(trigger: MilestoneTrigger): string | null {
   if (trigger.kind === 'start') {
     return null;
   }
@@ -57,7 +57,7 @@ export function milestoneCounterKey(trigger: MilestoneTrigger): string | null {
   return `place-${trigger.buildingId}`;
 }
 
-export function milestoneProgressFor(world: WorldState, trigger: MilestoneTrigger): number {
+function milestoneProgressFor(world: WorldState, trigger: MilestoneTrigger): number {
   const key = milestoneCounterKey(trigger);
   if (!key) {
     return 1;
@@ -65,7 +65,7 @@ export function milestoneProgressFor(world: WorldState, trigger: MilestoneTrigge
   return world.milestoneProgress[key] ?? 0;
 }
 
-export function milestoneTarget(trigger: MilestoneTrigger): number {
+function milestoneTarget(trigger: MilestoneTrigger): number {
   return trigger.kind === 'start' ? 1 : trigger.quantity;
 }
 
