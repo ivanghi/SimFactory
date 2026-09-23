@@ -4,9 +4,14 @@ import { getStorageCap } from '../sim/world';
 import { useGame } from './useGame';
 import { Tooltip } from './tooltip';
 import { SettingsMenu } from './settings-menu';
+import { RATE_WINDOW_SECONDS } from '../sim/rates';
+
+function formatRate(rate: number): string {
+  return rate >= 100 ? String(Math.floor(rate)) : rate.toFixed(1);
+}
 
 export const TopBar: React.FC = () => {
-  const { world } = useGame();
+  const { world, sciencePerMinute } = useGame();
   if (!world) return null;
   const cap = getStorageCap(world);
 
@@ -25,6 +30,14 @@ export const TopBar: React.FC = () => {
         );
       })}
       <div className="cap-note">cap {cap}</div>
+      <Tooltip
+        text={`Science per minute — average produced over the last ${RATE_WINDOW_SECONDS}s of game time`}
+      >
+        <div className="res science-rate">
+          <span className="res-name">Science/min</span>
+          <span className="res-amt">{formatRate(sciencePerMinute)}</span>
+        </div>
+      </Tooltip>
       <SettingsMenu />
     </div>
   );

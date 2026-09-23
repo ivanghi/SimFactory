@@ -1,4 +1,5 @@
 import type { WorldState } from '../sim/world';
+import { ratePerMinute, resetRateSamples, sampleProgress } from '../sim/rates';
 
 export type SpeedSetting = 0 | 1 | 2 | 3;
 
@@ -15,6 +16,7 @@ export interface UIState {
   speed: SpeedSetting;
   toasts: Toast[];
   settingsOpen: boolean;
+  sciencePerMinute: number;
 }
 
 let state: UIState = {
@@ -23,7 +25,8 @@ let state: UIState = {
   demolishMode: false,
   speed: 1,
   toasts: [],
-  settingsOpen: false
+  settingsOpen: false,
+  sciencePerMinute: 0
 };
 
 const listeners = new Set<() => void>();
@@ -52,8 +55,18 @@ function commit(partial: Partial<UIState>): void {
   emit();
 }
 
+function scienceProduced(world: WorldState): number {
+  return world.milestoneProgress['produce-science'] ?? 0;
+}
+
+function reseedRateTracker(world: WorldState): void {
+  resetRateSamples();
+  sampleProgress(world.time, scienceProduced(world));
+}
+
 export function setWorld(world: WorldState): void {
-  commit({ world });
+  reseedRateTracker(world);
+  commit({ world, sciencePerMinute: ratePerMinute() });
 }
 
 export function selectBuilding(id: string | null): void {
@@ -90,13 +103,15 @@ export function requestNewGame(): void {
 }
 
 export function resetWorld(world: WorldState): void {
+  reseedRateTracker(world);
   commit({
     world,
     selectedBuildingId: null,
     demolishMode: false,
     toasts: [],
     speed: 1,
-    settingsOpen: false
+    settingsOpen: false,
+    sciencePerMinute: ratePerMinute()
   });
 }
 
@@ -112,7 +127,10 @@ export function markSimChanged(): void {
 const UI_SYNC_INTERVAL_MS = 1000;
 
 function refresh(): void {
-  state = { ...state };
+  if (state.world) {
+    sampleProgress(state.world.time, scienceProduced(state.world));
+  }
+  state = { ...state, sciencePerMinute: ratePerMinute() };
   emit();
 }
 

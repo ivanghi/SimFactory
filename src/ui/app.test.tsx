@@ -2,8 +2,11 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { App } from './app';
-import { makeWorld } from '../test-utils/factories';
+import { tick } from '../sim/tick';
+import { TICK_DT } from '../data/constants';
+import { makeWorld, placeBuildingOk, unlockAll } from '../test-utils/factories';
 import {
+  bumpUi,
   closeSettings,
   getState,
   markSimChanged,
@@ -135,6 +138,63 @@ describe('UI', () => {
     expect(getState().world?.map.seed).toBe(99);
     expect(getState().selectedBuildingId).toBeNull();
     expect(getState().demolishMode).toBe(false);
+  });
+
+  describe('science rate top right', () => {
+    function rateText(): string | undefined {
+      return host.querySelector('.science-rate .res-amt')?.textContent;
+    }
+
+    function runGameSeconds(world: ReturnType<typeof makeWorld>, seconds: number): void {
+      for (let s = 0; s < seconds; s++) {
+        for (let i = 0; i < 10; i++) {
+          tick(world, TICK_DT);
+        }
+        act(() => bumpUi());
+      }
+    }
+
+    function worldWithLab() {
+      const world = makeWorld();
+      unlockAll(world);
+      // Lab build costs 10 circuits / 20 gears; the extra 4 each feed exactly 4 cycles.
+      world.stockpile['circuits'] = 14;
+      world.stockpile['gears'] = 24;
+      placeBuildingOk(world, 'lab', 10, 10);
+      world.power = { supply: 10, demand: 1, efficiency: 1 };
+      return world;
+    }
+
+    it('sits at the right end of the top bar, left of Settings, showing 0.0 before any science', () => {
+      const topbar = host.querySelector('.topbar');
+      const children = Array.from(topbar?.children ?? []);
+      const contains = (sel: string) => (el: Element) =>
+        el.matches(sel) || el.querySelector(sel) !== null;
+      const rate = children.findIndex(contains('.science-rate'));
+      const capNote = children.findIndex(contains('.cap-note'));
+      const settings = children.findIndex(contains('.settings-menu'));
+      expect(rate).toBeGreaterThan(-1);
+      expect(capNote).toBeLessThan(rate);
+      expect(rate).toBeLessThan(settings);
+      expect(topbar?.querySelector('.science-rate .res-name')?.textContent).toBe('Science/min');
+      expect(rateText()).toBe('0.0');
+    });
+
+    it('shows the real tick rate while the lab runs, decays to 0 when starved, resets on new game', () => {
+      const world = worldWithLab();
+      act(() => setWorld(world));
+      expect(rateText()).toBe('0.0');
+
+      runGameSeconds(world, 65);
+      expect(world.milestoneProgress['produce-science']).toBe(4);
+      expect(rateText()).toBe('4.0');
+
+      runGameSeconds(world, 70);
+      expect(rateText()).toBe('0.0');
+
+      act(() => resetWorld(makeWorld(99)));
+      expect(rateText()).toBe('0.0');
+    });
   });
 
   describe('sim-driven refresh', () => {

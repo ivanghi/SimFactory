@@ -14,6 +14,7 @@ Built with Vite, TypeScript (strict), React for the HUD, and a canvas renderer.
 - Adjacency bonuses for extractors, solar panels, and water-cooled coal generators
 - Milestone unlocks with toast notifications and an objectives panel
 - Storage caps that push you toward warehouses
+- Science per minute readout in the top right of the screen
 - Local autosave with offline catch-up and a return summary
 - Settings menu (top right) with a New game button
 
