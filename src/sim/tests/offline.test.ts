@@ -2,7 +2,6 @@ import { describe, test, expect } from 'vitest';
 import {
   OFFLINE_CAP_MS,
   OFFLINE_STEP_SECONDS,
-  computeOfflineElapsedMs,
   formatOfflineSummary,
   processOfflineTime
 } from '../offline';
@@ -57,21 +56,7 @@ function makeFactoryWorld(seed = 21): WorldState {
 }
 
 describe('elapsed time', () => {
-  test('clamps a much longer absence to the 8h cap', () => {
-    expect(computeOfflineElapsedMs(100 * 60 * 60 * 1000, 0)).toBe(EIGHT_HOURS);
-  });
-
-  test('a negative elapsed time clamps to zero', () => {
-    expect(computeOfflineElapsedMs(0, 100 * 60 * 60 * 1000)).toBe(0);
-    expect(computeOfflineElapsedMs(1000, 2000)).toBe(0);
-  });
-
-  test('non-finite inputs do not produce a corrupt elapsed time', () => {
-    expect(computeOfflineElapsedMs(Number.NaN, 0)).toBe(0);
-    expect(computeOfflineElapsedMs(0, Number.NaN)).toBe(0);
-    expect(computeOfflineElapsedMs(Number.POSITIVE_INFINITY, 0)).toBe(EIGHT_HOURS);
-  });
-
+  
   test('a full 8h absence is simulated as 480 coarse steps without clamping', () => {
     const summary = processOfflineTime(makeWorld(), EIGHT_HOURS);
     expect(summary.elapsedMs).toBe(EIGHT_HOURS);
@@ -260,6 +245,5 @@ describe('offline milestones and summary', () => {
 
   test('the 8h cap does not depend on the wall clock', () => {
     expect(OFFLINE_CAP_MS).toBe(EIGHT_HOURS);
-    expect(computeOfflineElapsedMs(OFFLINE_CAP_MS + 1, 0)).toBe(OFFLINE_CAP_MS);
   });
 });

@@ -1,6 +1,7 @@
 import React, { useEffect, useReducer } from 'react';
 import { useGame } from './useGame';
 import {
+  closeSettings,
   exportSaveCode,
   importSaveCode,
   requestNewGame,
@@ -71,7 +72,7 @@ export const SettingsMenu: React.FC = () => {
     const code = draftText;
     try {
       importSaveCode(code);
-      toggleSettings();
+      closeSettings();
     } catch (error) {
       importError = error instanceof SaveError ? error.message : 'Import failed.';
       forceRender();

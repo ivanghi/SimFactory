@@ -181,18 +181,15 @@ describe('milestones', () => {
   });
 
   test('offline-earned unlocks apply silently without per-milestone notifications', () => {
-    const notified: string[] = [];
     const onlineWorld = makeStartedWorld();
     onlineWorld.milestoneProgress['produce-fuel'] = 100;
-    evaluateMilestones(onlineWorld, event => notified.push(event.milestoneId));
-    expect(notified).toEqual(FUEL_THRESHOLD_UNLOCKS);
+    evaluateMilestones(onlineWorld);
 
     const offlineWorld = makeStartedWorld();
     offlineWorld.milestoneProgress['produce-fuel'] = 100;
     const silentEvents = applyMilestonesSilently(offlineWorld);
 
     expect(silentEvents.map(event => event.milestoneId)).toEqual(FUEL_THRESHOLD_UNLOCKS);
-    expect(notified).toEqual(FUEL_THRESHOLD_UNLOCKS);
     for (const id of FUEL_THRESHOLD_UNLOCKS) {
       expect(offlineWorld.unlocked[id]).toBe(true);
     }

@@ -23,8 +23,6 @@ export interface MilestoneObjective {
   done: boolean;
 }
 
-export type MilestoneUnlockListener = (event: MilestoneUnlockEvent) => void;
-
 function parseMilestoneTrigger(def: MilestoneDef): MilestoneTrigger {
   if (def.unlockedBy === 'start') {
     return { kind: 'start' };
@@ -77,8 +75,7 @@ function isSatisfied(world: WorldState, trigger: MilestoneTrigger): boolean {
 }
 
 export function evaluateMilestones(
-  world: WorldState,
-  notify?: MilestoneUnlockListener
+  world: WorldState
 ): MilestoneUnlockEvent[] {
   const events: MilestoneUnlockEvent[] = [];
   for (const def of milestones) {
@@ -101,9 +98,7 @@ export function evaluateMilestones(
       trigger
     };
     events.push(event);
-    if (notify) {
-      notify(event);
-    }
+    
   }
   return events;
 }

@@ -16,10 +16,6 @@ export interface OfflineSummary {
   unlocked: string[];
 }
 
-export function computeOfflineElapsedMs(now: number, savedAt: number): number {
-  return clampElapsed(now - savedAt);
-}
-
 export function processOfflineTime(world: WorldState, offlineTimeMs: number): OfflineSummary {
   const elapsedMs = clampElapsed(offlineTimeMs);
   const before = { ...world.stockpile };

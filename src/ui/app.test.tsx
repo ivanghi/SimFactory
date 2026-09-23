@@ -8,7 +8,7 @@ import { makeWorld, placeBuildingOk, unlockAll } from '../test-utils/factories';
 import { exportGame, importGame } from '../save/exportImport';
 import {
   bumpUi,
-  toggleSettings,
+  closeSettings,
   getState,
   markSimChanged,
   resetWorld,
@@ -63,7 +63,7 @@ describe('UI', () => {
     act(() => root.unmount());
     host.remove();
     act(() => selectBuilding(null));
-    act(() => toggleSettings());
+    act(() => closeSettings());
     setNewGameHandler(null);
     setSpeed(1);
   });

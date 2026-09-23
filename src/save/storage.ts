@@ -39,20 +39,19 @@ export function saveGame(save: GameSave): boolean {
 }
 
 export function loadGame(): GameSave | null {
-  const storage = getStorage();
-  if (!storage) {
+  const saved = hasSave();
+  if (!saved) {
     return null;
   }
-  const raw = storage.getItem(SAVE_STORAGE_KEY);
-  if (raw === null) {
-    return null;
-  }
-  return deserializeWorld(raw);
+  const raw =  getStorage()!.getItem(SAVE_STORAGE_KEY);
+
+  return deserializeWorld(raw!);
 }
 
 export function hasSave(): boolean {
   const storage = getStorage();
-  return storage !== null && storage.getItem(SAVE_STORAGE_KEY) !== null;
+  if(storage == null) return false;
+  return storage.getItem(SAVE_STORAGE_KEY) !== null;
 }
 
 export function clearSave(): void {

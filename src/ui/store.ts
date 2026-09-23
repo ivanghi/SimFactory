@@ -93,6 +93,10 @@ export function toggleSettings(): void {
   commit({ settingsOpen: !state.settingsOpen });
 }
 
+export function closeSettings(): void {
+  commit({ settingsOpen: false });
+}
+
 export function setNewGameHandler(handler: (() => void) | null): void {
   newGameHandler = handler;
 }

@@ -54,14 +54,6 @@ let ghostState: { buildingId: string; tx: number; ty: number } | null = null;
 let lastTime = 0;
 let accumulator = 0;
 
-export function getWorld(): WorldState {
-  return world;
-}
-
-export function getCamera(): CameraController {
-  return camera;
-}
-
 interface CanvasPoint {
   x: number;
   y: number;
