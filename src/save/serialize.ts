@@ -1,12 +1,12 @@
 import { generateMap } from '../sim/mapgen';
 import type { Map } from '../sim/mapgen';
 import { getBuildingDef } from '../data/buildings';
+import { MAP_SIZE } from '../data/constants';
 import type { Building, PowerState, WorldState } from '../sim/world';
 
 export const CURRENT_SAVE_VERSION = 1;
 const LEGACY_SAVE_VERSION = 0;
 
-const MAP_SIZE = 64;
 const SPEED_MIN = 0;
 const SPEED_MAX = 3;
 

@@ -8,13 +8,14 @@ import { updatePower } from './sim/power';
 import { evaluateMilestones } from './sim/milestones';
 import type { MilestoneUnlockEvent } from './sim/milestones';
 import { getBuildingDef } from './data/buildings';
-import { TICK_DT } from './data/constants';
+import { MAP_SIZE, TICK_DT } from './data/constants';
 import { CameraController } from './render/camera';
 import { CanvasRenderer } from './render/canvas';
 import { formatOfflineSummary, processOfflineTime } from './sim/offline';
 import type { OfflineSummary } from './sim/offline';
 import { SaveError } from './save/serialize';
 import { clearSave, loadGame, startAutosave } from './save/storage';
+import { exportGame, importGame } from './save/exportImport';
 import { App } from './ui/app';
 import {
   bumpUi,
@@ -22,6 +23,7 @@ import {
   markSimChanged,
   pushToast,
   resetWorld,
+  setGameCodeHandlers,
   setNewGameHandler,
   setSpeed,
   setWorld,
@@ -32,7 +34,6 @@ import type { SpeedSetting } from './ui/store';
 const MAX_ACCUMULATOR = 0.5;
 const CANVAS_ID = 'game-canvas';
 const CONTAINER_ID = 'game-container';
-const MAP_SIZE = 64;
 
 const PLACEMENT_MESSAGES: Record<PlacementError, string> = {
   'unknown-building': 'Unknown building',
@@ -234,6 +235,21 @@ function startNewGame(): void {
   pushToast('New game started');
 }
 
+function exportCurrentSave(): string {
+  return exportGame({ world, meta: { savedAt: Date.now(), speed: getState().speed } });
+}
+
+function importExportedSave(code: string): void {
+  const save = importGame(code);
+  world = save.world;
+  ghostState = null;
+  accumulator = 0;
+  camera.centerOnMap();
+  resetWorld(world);
+  setSpeed(clampSpeed(save.meta.speed));
+  pushToast('Save imported');
+}
+
 function init(): void {
   const restored = restoreOrCreate();
   world = restored.world;
@@ -256,6 +272,7 @@ function init(): void {
   setWorld(world);
   setSpeed(restored.speed);
   setNewGameHandler(startNewGame);
+  setGameCodeHandlers({ exportCode: exportCurrentSave, importCode: importExportedSave });
   mountUI();
 
   if (restored.offline) {

@@ -1,5 +1,6 @@
 import { describe, test, expect } from 'vitest';
 import { generateMap } from '../../sim/mapgen';
+import { MAP_SIZE } from '../../data/constants';
 import {
   CURRENT_SAVE_VERSION,
   SaveError,
@@ -69,8 +70,8 @@ describe('serialize round-trip', () => {
 
     expect(save.world.map.seed).toBe(987_654);
     expect(save.world.map).toEqual(generateMap(987_654));
-    expect(save.world.map.tiles).toHaveLength(64);
-    expect(save.world.map.tiles[0]).toHaveLength(64);
+    expect(save.world.map.tiles).toHaveLength(MAP_SIZE);
+    expect(save.world.map.tiles[0]).toHaveLength(MAP_SIZE);
   });
 
   test('buildings, stockpile, unlocks, counters, power and clock all survive', () => {
@@ -216,7 +217,7 @@ describe('version migration', () => {
     const save = deserializeWorld(JSON.stringify(legacy));
 
     expect(save.world.map.seed).toBe(777);
-    expect(save.world.map.tiles).toHaveLength(64);
+    expect(save.world.map.tiles).toHaveLength(MAP_SIZE);
     expect(save.world.buildings).toEqual(legacy.buildings);
     expect(save.world.stockpile).toEqual(legacy.stockpile);
     expect(save.world.time).toBe(42);

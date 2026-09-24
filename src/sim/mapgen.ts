@@ -1,5 +1,7 @@
 
 
+import { MAP_SIZE } from '../data/constants';
+
 export type TileType = 'grass' | 'rock' | 'water';
 export type Tile = {
   type: TileType;
@@ -38,8 +40,8 @@ function makeLatticeNoise(random: () => number, cells: number): (x: number, y: n
   }
 
   return (x: number, y: number): number => {
-    const fx = clamp((x / 64) * cells, 0, cells);
-    const fy = clamp((y / 64) * cells, 0, cells);
+    const fx = clamp((x / MAP_SIZE) * cells, 0, cells);
+    const fy = clamp((y / MAP_SIZE) * cells, 0, cells);
     const x0 = Math.floor(fx);
     const y0 = Math.floor(fy);
     const x1 = Math.min(x0 + 1, cells);
@@ -85,7 +87,7 @@ function generateResourceCluster(
   // Determine cluster size (3-9 tiles)
   const clusterSize = Math.floor(random() * 7) + 3;
 
-  const inBounds = (x: number, y: number): boolean => x >= 0 && x < 64 && y >= 0 && y < 64;
+  const inBounds = (x: number, y: number): boolean => x >= 0 && x < MAP_SIZE && y >= 0 && y < MAP_SIZE;
   const isFreeGrass = (x: number, y: number): boolean =>
     inBounds(x, y) && map.tiles[y][x].type === 'grass' && !map.tiles[y][x].resource;
 
@@ -150,6 +152,11 @@ function generateResourceCluster(
 
 const REQUIRED_RESOURCES: ResourceType[] = ['iron-ore', 'copper-ore', 'coal', 'crude-oil'];
 
+const BASE_MAP_AREA = 64 * 64;
+function scaleClusterCount(base: number): number {
+  return Math.max(1, Math.round((base * MAP_SIZE * MAP_SIZE) / BASE_MAP_AREA));
+}
+
 function hasResource(map: Map, resourceType: ResourceType): boolean {
   return map.tiles.some(row => row.some(tile => tile.resource?.type === resourceType));
 }
@@ -160,8 +167,8 @@ function ensureResourcePresence(map: Map, random: () => number): void {
       continue;
     }
     for (let attempt = 0; attempt < 4000; attempt++) {
-      const x = Math.floor(random() * 64);
-      const y = Math.floor(random() * 64);
+      const x = Math.floor(random() * MAP_SIZE);
+      const y = Math.floor(random() * MAP_SIZE);
       const tile = map.tiles[y][x];
       if (tile.type === 'grass' && !tile.resource) {
         generateResourceCluster(map, resourceType, x, y, random);
@@ -173,9 +180,9 @@ function ensureResourcePresence(map: Map, random: () => number): void {
   }
 }
 
-const START_CENTER_X = 32;
-const START_CENTER_Y = 32;
-const START_HALF_SIZE = 8; // For 16x16 area
+const START_CENTER_X = MAP_SIZE / 2;
+const START_CENTER_Y = MAP_SIZE / 2;
+const START_HALF_SIZE = MAP_SIZE / 8;
 const START_MIN_X = START_CENTER_X - START_HALF_SIZE;
 const START_MAX_X = START_CENTER_X + START_HALF_SIZE;
 const START_MIN_Y = START_CENTER_Y - START_HALF_SIZE;
@@ -394,15 +401,14 @@ function repairStartArea(map: Map, random: () => number): void {
 export function generateMap(seed: number): Map {
   const random = mulberry32(seed);
 
-  const coarseNoise = makeLatticeNoise(random, 8);
-  const mediumNoise = makeLatticeNoise(random, 16);
-  const fineNoise = makeLatticeNoise(random, 32);
+  const coarseNoise = makeLatticeNoise(random, MAP_SIZE / 8);
+  const mediumNoise = makeLatticeNoise(random, MAP_SIZE / 4);
+  const fineNoise = makeLatticeNoise(random, MAP_SIZE / 2);
 
-  // Initialize 64x64 grid
   const tiles: Tile[][] = [];
-  for (let y = 0; y < 64; y++) {
+  for (let y = 0; y < MAP_SIZE; y++) {
     tiles.push([]);
-    for (let x = 0; x < 64; x++) {
+    for (let x = 0; x < MAP_SIZE; x++) {
       const terrainValue =
         coarseNoise(x, y) * 0.5 + mediumNoise(x, y) * 0.3 + fineNoise(x, y) * 0.2;
       tiles[y].push({
@@ -421,10 +427,10 @@ export function generateMap(seed: number): Map {
   
   // Number of clusters per resource type
   const clusterCounts = {
-    'iron-ore': Math.floor(random() * 5) + 5,  // 5-9 clusters
-    'copper-ore': Math.floor(random() * 5) + 5, // 5-9 clusters
-    coal: Math.floor(random() * 5) + 5,   // 5-9 clusters
-    'crude-oil': Math.floor(random() * 3) + 2     // 2-4 clusters
+    'iron-ore': scaleClusterCount(Math.floor(random() * 5) + 5),
+    'copper-ore': scaleClusterCount(Math.floor(random() * 5) + 5),
+    coal: scaleClusterCount(Math.floor(random() * 5) + 5),
+    'crude-oil': scaleClusterCount(Math.floor(random() * 3) + 2)
   };
   
   // Place resource clusters
@@ -432,8 +438,8 @@ export function generateMap(seed: number): Map {
     const count = clusterCounts[resourceType];
     for (let i = 0; i < count; i++) {
       // Random position on the map
-      const x = Math.floor(random() * 64);
-      const y = Math.floor(random() * 64);
+      const x = Math.floor(random() * MAP_SIZE);
+      const y = Math.floor(random() * MAP_SIZE);
       
       // Only place cluster on grass tiles
       if (map.tiles[y][x].type === 'grass' && !map.tiles[y][x].resource) {

@@ -1,5 +1,6 @@
 import type { WorldState, Building, PlacementError } from '../sim/world';
 import { getBuildingDef } from '../data/buildings';
+import { MAP_SIZE } from '../data/constants';
 import { TILE_SIZE, CameraController } from './camera';
 
 const GRASS_COLOR = '#4a7';
@@ -147,7 +148,7 @@ export class CanvasRenderer {
       const { x: mx, y: my } = this.camera.getMousePosition();
       if (mx >= 0 && my >= 0 && mx < w && my < h) {
         const { tx, ty } = this.camera.screenToTile(mx, my);
-        if (tx >= 0 && tx < 64 && ty >= 0 && ty < 64) {
+        if (tx >= 0 && tx < MAP_SIZE && ty >= 0 && ty < MAP_SIZE) {
           const hasBuilding = world.buildings.some((b) => b.x === tx && b.y === ty);
           if (hasBuilding) {
             const pos = this.camera.tileToScreen(tx, ty);

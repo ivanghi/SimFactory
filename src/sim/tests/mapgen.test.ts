@@ -1,5 +1,6 @@
 import { describe, test, expect } from 'vitest';
 import { generateMap, Map, TileType } from '../mapgen';
+import { MAP_SIZE } from '../../data/constants';
 
 type ResourceType = 'iron-ore' | 'copper-ore' | 'coal' | 'crude-oil';
 
@@ -10,8 +11,8 @@ describe('Map Generation', () => {
     const map2 = generateMap(seed);
     
     // Compare all tiles
-    for (let y = 0; y < 64; y++) {
-      for (let x = 0; x < 64; x++) {
+    for (let y = 0; y < MAP_SIZE; y++) {
+      for (let x = 0; x < MAP_SIZE; x++) {
         expect(map1.tiles[y][x]).toEqual(map2.tiles[y][x]);
       }
     }
@@ -40,8 +41,8 @@ describe('Map Generation', () => {
       const map2 = generateMap(seed2);
       
       // Check if maps are different
-      for (let y = 0; y < 64 && !differentMapsFound; y++) {
-        for (let x = 0; x < 64 && !differentMapsFound; x++) {
+      for (let y = 0; y < MAP_SIZE && !differentMapsFound; y++) {
+        for (let x = 0; x < MAP_SIZE && !differentMapsFound; x++) {
           if (map1.tiles[y][x].type !== map2.tiles[y][x].type ||
               map1.tiles[y][x].resource?.type !== map2.tiles[y][x].resource?.type ||
               map1.tiles[y][x].resource?.richness !== map2.tiles[y][x].resource?.richness) {
@@ -57,17 +58,17 @@ describe('Map Generation', () => {
   test('grid dimensions are exactly 64x64', () => {
     const map = generateMap(12345);
     
-    expect(map.tiles.length).toBe(64);
-    for (let y = 0; y < 64; y++) {
-      expect(map.tiles[y].length).toBe(64);
+    expect(map.tiles.length).toBe(MAP_SIZE);
+    for (let y = 0; y < MAP_SIZE; y++) {
+      expect(map.tiles[y].length).toBe(MAP_SIZE);
     }
   });
 
   test('every tile richness falls in [0.5, 2.0]', () => {
     const map = generateMap(12345);
     
-    for (let y = 0; y < 64; y++) {
-      for (let x = 0; x < 64; x++) {
+    for (let y = 0; y < MAP_SIZE; y++) {
+      for (let x = 0; x < MAP_SIZE; x++) {
           if (map.tiles[y][x].resource) {
             const richness = map.tiles[y][x].resource!.richness;
             expect(richness).toBeGreaterThanOrEqual(0.5);
@@ -80,8 +81,8 @@ describe('Map Generation', () => {
   test('terrain types are limited to the three valid values', () => {
     const map = generateMap(12345);
     
-    for (let y = 0; y < 64; y++) {
-      for (let x = 0; x < 64; x++) {
+    for (let y = 0; y < MAP_SIZE; y++) {
+      for (let x = 0; x < MAP_SIZE; x++) {
         const validTypes: TileType[] = ['grass', 'rock', 'water'];
         expect(validTypes).toContain(map.tiles[y][x].type);
       }
@@ -94,10 +95,9 @@ describe('Map Generation', () => {
     for (let i = 0; i < numSeeds; i++) {
       const map = generateMap(i);
       
-      // Check the center 16x16 region (from 24,24 to 40,40)
-      const centerX = 32;
-      const centerY = 32;
-      const halfSize = 8; // For 16x16 area
+      const centerX = MAP_SIZE / 2;
+      const centerY = MAP_SIZE / 2;
+      const halfSize = MAP_SIZE / 8;
       
       let hasIron = false;
       let hasCoal = false;
@@ -131,10 +131,10 @@ describe('Map Generation', () => {
     const map = generateMap(12345);
     
     // Identify clusters by flood-filling connected resource tiles of the same type
-    const visited: boolean[][] = Array(64).fill(null).map(() => Array(64).fill(false));
+    const visited: boolean[][] = Array(MAP_SIZE).fill(null).map(() => Array(MAP_SIZE).fill(false));
     
-    for (let y = 0; y < 64; y++) {
-      for (let x = 0; x < 64; x++) {
+    for (let y = 0; y < MAP_SIZE; y++) {
+      for (let x = 0; x < MAP_SIZE; x++) {
         if (!visited[y][x] && map.tiles[y][x].resource) {
           const resourceType = map.tiles[y][x].resource!.type;
           const clusterSize = measureClusterSize(map, x, y, resourceType, visited);
@@ -160,7 +160,7 @@ function measureClusterSize(
   while (stack.length > 0) {
     const [x, y] = stack.pop()!;
     
-    if (x < 0 || x >= 64 || y < 0 || y >= 64) continue;
+    if (x < 0 || x >= MAP_SIZE || y < 0 || y >= MAP_SIZE) continue;
     if (visited[y][x]) continue;
     if (!map.tiles[y][x].resource || map.tiles[y][x].resource!.type !== resourceType) continue;
     

@@ -16,6 +16,7 @@ Built with Vite, TypeScript (strict), React for the HUD, and a canvas renderer.
 - Storage caps that push you toward warehouses
 - Science per minute readout in the top right of the screen
 - Local autosave with offline catch-up and a return summary
+- Save export/import: copy a base64 save code or download it as a text file, paste one to restore
 - Settings menu (top right) with a New game button
 
 ## Getting started
@@ -78,6 +79,12 @@ are applied silently and folded into a single offline summary toast.
 The game autosaves to `localStorage` every 10 seconds, when the tab is hidden, and on
 unload. On load, elapsed time is replayed through the same tick function in 60-second
 steps, capped at 8 hours; a negative or tampered clock change contributes nothing.
+
+Open **Settings** and use **Export save** to copy the current game as a base64 code
+(also shown in a box for manual copy), or **Export file** to download it as a
+`factory-save-YYYY-MM-DD.txt` text file. Paste a code into **Import save** and click the
+button to replace the current game. A rejected import shows the reason inline and
+leaves your current world untouched.
 
 ## Project structure
 

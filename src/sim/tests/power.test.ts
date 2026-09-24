@@ -83,7 +83,7 @@ describe('power', () => {
     placeBuildingOk(surplus, SOLAR_PANEL_ID, 10, 10);
     placeBuildingOk(surplus, COAL_GENERATOR_ID, 30, 30);
     surplus.stockpile['iron-ingot'] = 100;
-    placeBuildingOk(surplus, 'smelter', 40, 40);
+    placeBuildingOk(surplus, 'smelter', 25, 25);
     updatePower(surplus, TICK_DT);
     expect(surplus.power.supply).toBeGreaterThan(surplus.power.demand);
     expect(surplus.power.efficiency).toBe(1);

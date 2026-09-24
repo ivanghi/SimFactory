@@ -2,6 +2,7 @@ import { describe, test, expect } from 'vitest';
 import { tick } from '../tick';
 import { demolishBuilding, getStorageCap, placeBuilding } from '../world';
 import type { WorldState } from '../world';
+import { MAP_SIZE } from '../../data/constants';
 import { makeWorld, placeBuildingOk, setNode, setTerrain, unlockAll } from '../../test-utils/factories';
 
 function runTicks(world: WorldState, count: number, dt = 0.1): void {
@@ -156,7 +157,7 @@ describe('tick', () => {
 
     expect(placeBuilding(world, 'nope', 1, 1).error).toBe('unknown-building');
     expect(placeBuilding(world, 'refinery', 13, 13).error).toBe('locked');
-    expect(placeBuilding(world, 'smelter', 64, 64).error).toBe('out-of-bounds');
+    expect(placeBuilding(world, 'smelter', MAP_SIZE, MAP_SIZE).error).toBe('out-of-bounds');
     expect(placeBuilding(world, 'smelter', -1, 0).error).toBe('out-of-bounds');
     expect(placeBuilding(world, 'smelter', 8, 8).error).toBe('not-buildable');
     expect(placeBuilding(world, 'smelter', 9, 9).error).toBe('not-buildable');

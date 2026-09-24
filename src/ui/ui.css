@@ -72,7 +72,7 @@
   top: calc(100% + 8px);
   right: 0;
   z-index: 40;
-  min-width: 160px;
+  min-width: 240px;
   padding: 8px;
   background: rgba(20, 24, 30, 0.97);
   border: 1px solid #3c4655;
@@ -102,6 +102,87 @@
 
 .settings-new-game:hover {
   border-color: #a05a62;
+}
+
+.settings-section {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.settings-section-title {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.7;
+}
+
+.export-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.export-row .settings-export {
+  flex: 1 1 auto;
+  width: auto;
+}
+
+.export-row .export-copied {
+  flex: 1 1 100%;
+}
+
+.settings-export,
+.settings-import {
+  width: 100%;
+  padding: 6px 8px;
+  background: #232830;
+  color: #e6e6e6;
+  border: 1px solid #343b46;
+  border-radius: 5px;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.settings-export:hover,
+.settings-import:hover {
+  border-color: #5c6a7d;
+}
+
+.export-copied {
+  color: #7ddb8a;
+  white-space: nowrap;
+}
+
+.export-code,
+.import-input {
+  width: 100%;
+  padding: 4px 6px;
+  background: #171b21;
+  color: #b9c4d0;
+  border: 1px solid #343b46;
+  border-radius: 5px;
+  font: 10px/1.4 ui-monospace, monospace;
+  resize: vertical;
+  overflow-wrap: anywhere;
+}
+
+.export-code {
+  pointer-events: auto;
+  user-select: text;
+}
+
+.import-input:focus,
+.export-code:focus {
+  outline: 1px solid #6db3ff;
+  border-color: #6db3ff;
+}
+
+.import-error {
+  color: #ff8476;
 }
 
 .topbar .tooltip-wrap {

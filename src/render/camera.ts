@@ -1,3 +1,5 @@
+import { MAP_SIZE } from '../data/constants';
+
 export const TILE_SIZE = 48;
 const MIN_ZOOM = 0.25;
 const MAX_ZOOM = 3;
@@ -35,7 +37,7 @@ export class CameraController {
   }
 
   centerOnMap(): void {
-    const mapPx = 64 * TILE_SIZE;
+    const mapPx = MAP_SIZE * TILE_SIZE;
     this.camera.x = Math.max(0, (mapPx - this.canvasWidth / this.camera.zoom) / 2);
     this.camera.y = Math.max(0, (mapPx - this.canvasHeight / this.camera.zoom) / 2);
     this.clamp();
@@ -134,13 +136,13 @@ export class CameraController {
     return {
       startX: Math.max(0, Math.floor(tl.x / TILE_SIZE)),
       startY: Math.max(0, Math.floor(tl.y / TILE_SIZE)),
-      endX: Math.min(63, Math.ceil(br.x / TILE_SIZE)),
-      endY: Math.min(63, Math.ceil(br.y / TILE_SIZE)),
+      endX: Math.min(MAP_SIZE - 1, Math.ceil(br.x / TILE_SIZE)),
+      endY: Math.min(MAP_SIZE - 1, Math.ceil(br.y / TILE_SIZE)),
     };
   }
 
   private clamp(): void {
-    const mapPx = 64 * TILE_SIZE;
+    const mapPx = MAP_SIZE * TILE_SIZE;
     const vw = this.canvasWidth / this.camera.zoom;
     const vh = this.canvasHeight / this.camera.zoom;
     if (vw >= mapPx) {

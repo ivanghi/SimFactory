@@ -35,6 +35,13 @@ let simChanged = false;
 let lastUiSync = 0;
 let newGameHandler: (() => void) | null = null;
 
+export interface GameCodeHandlers {
+  exportCode: () => string;
+  importCode: (code: string) => void;
+}
+
+let gameCodeHandlers: GameCodeHandlers | null = null;
+
 export function subscribe(listener: () => void): () => void {
   listeners.add(listener);
   return () => listeners.delete(listener);
@@ -86,10 +93,6 @@ export function toggleSettings(): void {
   commit({ settingsOpen: !state.settingsOpen });
 }
 
-export function closeSettings(): void {
-  commit({ settingsOpen: false });
-}
-
 export function setNewGameHandler(handler: (() => void) | null): void {
   newGameHandler = handler;
 }
@@ -100,6 +103,18 @@ export function requestNewGame(): void {
   if (handler) {
     handler();
   }
+}
+
+export function setGameCodeHandlers(handlers: GameCodeHandlers | null): void {
+  gameCodeHandlers = handlers;
+}
+
+export function exportSaveCode(): string {
+  return gameCodeHandlers?.exportCode() ?? '';
+}
+
+export function importSaveCode(code: string): void {
+  gameCodeHandlers?.importCode(code);
 }
 
 export function resetWorld(world: WorldState): void {

@@ -1,4 +1,5 @@
 import { generateMap, Map, Tile } from '../sim/mapgen';
+import { MAP_SIZE } from '../data/constants';
 import { createWorld, placeBuilding } from '../sim/world';
 import type { Building, WorldState } from '../sim/world';
 
@@ -6,9 +7,9 @@ type NodeResourceType = NonNullable<Tile['resource']>['type'];
 
 function makeTestMap(seed = 1): Map {
   const tiles: Tile[][] = [];
-  for (let y = 0; y < 64; y++) {
+  for (let y = 0; y < MAP_SIZE; y++) {
     const row: Tile[] = [];
-    for (let x = 0; x < 64; x++) {
+    for (let x = 0; x < MAP_SIZE; x++) {
       row.push({ type: 'grass' });
     }
     tiles.push(row);
@@ -60,8 +61,8 @@ export function makeSeededWorld(seed = 4242): WorldState {
   world.stockpile['iron-ingot'] = 500;
   world.stockpile['coal'] = 37.5;
   world.buildings = [
-    { id: 'b1', buildingId: 'iron-miner', x: 32, y: 32, adjacencyMultiplier: 1.2, progress: 0.4 },
-    { id: 'b2', buildingId: 'solar-panel', x: 33, y: 32, adjacencyMultiplier: 1.1, progress: 2.5 }
+    { id: 'b1', buildingId: 'iron-miner', x: 16, y: 16, adjacencyMultiplier: 1.2, progress: 0.4 },
+    { id: 'b2', buildingId: 'solar-panel', x: 17, y: 16, adjacencyMultiplier: 1.1, progress: 2.5 }
   ];
   world.nextBuildingId = 3;
   world.power = { supply: 2.2, demand: 1, efficiency: 1 };
